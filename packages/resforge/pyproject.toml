@@ -28,6 +28,9 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest"]
+
 [project.urls]
 Homepage = "https://kipila.dev"
 Repository = "https://github.com/ok100/resforge"
