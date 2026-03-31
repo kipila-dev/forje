@@ -25,7 +25,7 @@ class ValuesWriter:
         ...     res.dimension(padding_small=dp(8)).color(primary=0xFF0000)
     """
 
-    def __init__(self, path: str | Path):
+    def __init__(self, path: str | Path) -> None:
         """
         Args:
             path: The filesystem path where the XML will be saved.

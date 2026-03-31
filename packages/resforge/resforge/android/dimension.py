@@ -9,7 +9,7 @@ class Dimension:
     value: int | float
     unit: DimensionUnit
 
-    def __init__(self, value: int | float, unit: DimensionUnit):
+    def __init__(self, value: int | float, unit: DimensionUnit) -> None:
         """
         Args:
             value: The numeric dimension value. Negative values are permitted
