@@ -5,6 +5,7 @@ import pytest
 
 from resforge.android import (PluralValues, ValuesWriter, dp, inch, mm, pt, px,
                               sp)
+from resforge.types import Color
 
 
 class TestDimension:
@@ -153,16 +154,9 @@ class TestColor:
         assert elem is not None
         assert elem.text == "#FF6200EE"
 
-    def test_int_rgb(self, xml_path: Path):
+    def test_color(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
-            res.color(primary=0x6200EE)
-        elem = parse(xml_path).find("color[@name='primary']")
-        assert elem is not None
-        assert elem.text == "#FF6200EE"
-
-    def test_int_argb(self, xml_path: Path):
-        with ValuesWriter(xml_path) as res:
-            res.color(primary=0xFF6200EE)
+            res.color(primary=Color.from_hex("#FF6200EE"))
         elem = parse(xml_path).find("color[@name='primary']")
         assert elem is not None
         assert elem.text == "#FF6200EE"
@@ -171,11 +165,6 @@ class TestColor:
         with pytest.raises(ValueError):
             with ValuesWriter(xml_path) as res:
                 res.color(primary="notacolor")
-
-    def test_invalid_int_raises(self, xml_path: Path):
-        with pytest.raises(ValueError):
-            with ValuesWriter(xml_path) as res:
-                res.color(primary=-1)
 
 
 class TestDimensionWriter:

@@ -4,7 +4,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, Self
 
-from .colorset import Color, ColorSet
+from resforge.types import Color
+
+from .colorset import ColorSet
+from .types import AppleColor
 
 
 def _write_contents(path: str | Path, contents: Dict[str, Any]) -> None:
@@ -105,9 +108,9 @@ class AssetCatalog:
     def mipmapset(self, name: str) -> Self:
         return self
 
-    def colorset(self, name: str, *color: Color) -> Self:
+    def colorset(self, name: str, *colors: str | Color | AppleColor) -> Self:
         with ColorSet(self._temp_path, name) as cs:
-            cs.color(*color)
+            cs.color(*colors)
         return self
 
     def spriteatlas(self, name: str) -> Self:

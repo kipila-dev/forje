@@ -1,65 +1,28 @@
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Literal
+from typing import Any, Dict, assert_never
+
+from resforge.types import Color
 
 from .catalog import AssetNode
-from .types import ColorSpace, DisplayGamut, Idiom
-
-
-@dataclass
-class Color:
-    red: float
-    green: float
-    blue: float
-    alpha: float = 1.0
-    color_space: ColorSpace | None = None
-    appearance: Literal["light", "dark"] | None = None
-    display_gamut: DisplayGamut | None = None
-    idiom: Idiom = "universal"
-
-    def __post_init__(self) -> None:
-        for field in (self.red, self.green, self.blue, self.alpha):
-            if not 0.0 <= field <= 1.0:
-                raise ValueError(
-                    f"Color components must be between 0 and 1 (got {field})"
-                )
-
-    def to_dict(self) -> Dict[str, Any]:
-        result: dict[str, Any] = {
-            "color": {
-                "components": {
-                    "red": self.red,
-                    "green": self.green,
-                    "blue": self.blue,
-                    "alpha": self.alpha,
-                },
-            }
-        }
-
-        if self.color_space is not None:
-            result["color"]["color-space"] = self.color_space
-
-        if self.appearance is not None:
-            result["appearances"] = [
-                {"appearance": "luminosity", "value": self.appearance}
-            ]
-
-        if self.display_gamut is not None:
-            result["display-gamut"] = self.display_gamut
-
-        if self.idiom is not None:
-            result["idiom"] = self.idiom
-
-        return result
+from .types import AppleColor
 
 
 class ColorSet(AssetNode):
     def __init__(self, path: str | Path, name: str) -> None:
         super().__init__(path, name, "colorset")
-        self._colors: list[Color] = []
+        self._colors: list[AppleColor] = []
 
-    def color(self, *color: Color) -> None:
-        self._colors.extend(color)
+    def color(self, *colors: str | Color | AppleColor) -> None:
+        for c in colors:
+            match c:
+                case str():
+                    self._colors.append(AppleColor(components=Color.from_hex(c)))
+                case Color():
+                    self._colors.append(AppleColor(components=c))
+                case AppleColor():
+                    self._colors.append(c)
+                case _:
+                    assert_never(c)
 
     def _create_contents(self) -> Dict[str, Any]:
         if not self._colors:

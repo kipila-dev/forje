@@ -3,14 +3,13 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Pattern, Self
 
+from resforge.types import Color
+
 from .dimension import Dimension
 from .plural import PluralValues
 
 _NAME_PATTERN = re.compile(r"^[a-z_][a-z0-9_]*$")
 _STYLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_\.]*$")
-_COLOR_PATTERN = re.compile(
-    r"^#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$"
-)
 
 
 class ValuesWriter:
@@ -120,41 +119,25 @@ class ValuesWriter:
             self._append("bool", name, str(val).lower())
         return self
 
-    def color(self, **values: str | int) -> Self:
+    def color(self, **values: str | Color) -> Self:
         """
         Appends one or more <color> resources.
 
-        Supports hex integers (0xAARRGGBB) and
-        standard Android hex strings (#RGB, #ARGB, #RRGGBB, #AARRGGBB).
+        Supports standard Android hex strings (#RGB, #ARGB, #RRGGBB, #AARRGGBB).
 
         Raises:
-            ValueError: If the integer range is invalid or string format is incorrect.
+            ValueError: If the string format is incorrect.
         """
-        for name, val in values.items():
-            if isinstance(val, int):
-                if 0 <= val <= 0xFFFFFF:
-                    color_str = f"#FF{val:06X}"
-                elif 0xFFFFFF < val <= 0xFFFFFFFF:
-                    color_str = f"#{val:08X}"
-                else:
-                    raise ValueError(
-                        f"Color '{name}' has invalid integer value: {val:#x}"
-                    )
-
-            elif isinstance(val, str):
-                if not _COLOR_PATTERN.match(val):
-                    raise ValueError(
-                        f"Color '{name}' has invalid format: '{val}'. "
-                        "Expected #RGB, #ARGB, #RRGGBB, or #AARRGGBB."
-                    )
-                color_str = val
-
-            else:
+        for name, color in values.items():
+            if not isinstance(color, str | Color):
                 raise TypeError(
-                    f"Color '{name}' must be str or int, got {type(val).__name__}"
+                    f"Color '{name}' must be str or Color, got {type(color).__name__}"
                 )
 
-            self._append("color", name, color_str.upper())
+            if isinstance(color, str):
+                color = Color.from_hex(color)
+
+            self._append("color", name, color.to_hex)
         return self
 
     def dimension(self, **values: Dimension) -> Self:
