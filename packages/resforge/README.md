@@ -1,7 +1,7 @@
 # resforge
 
 A fluent Python library for generating Android XML resources and Xcode Asset
-Catalogs (.xcassets).
+Catalogs (`.xcassets`).
 
 ## Installation
 
