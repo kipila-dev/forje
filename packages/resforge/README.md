@@ -1,20 +1,7 @@
 # resforge
 
-A fluent Python library for generating Android XML resource files.
-
-Generate Android resource files programmatically instead of writing XML by hand.
-Perfect for CI pipelines, design system syncing, and large-scale apps.
-
-## Why resforge?
-
-Writing Android XML manually doesn’t scale well when:
-
-- Resources are generated from data (APIs, JSON, design tokens)
-- You maintain multiple brands / environments
-- Values need to stay consistent across files
-- You want automation in CI/CD
-
-**resforge** lets you define everything in Python and generate clean, valid XML automatically.
+A fluent Python library for generating Android XML resources and Xcode Asset
+Catalogs (`.xcassets`).
 
 ## Installation
 
@@ -23,6 +10,8 @@ pip install resforge
 ```
 
 ## Quick Example
+
+### Android
 
 ```python
 from resforge.android import ValuesWriter, dp, sp
@@ -44,8 +33,6 @@ with ValuesWriter("res/values/resources.xml") as res:
     )
 ```
 
-### Output
-
 ```xml
 <resources>
     <string name="app_name">My App</string>
@@ -59,15 +46,69 @@ with ValuesWriter("res/values/resources.xml") as res:
 </resources>
 ```
 
+### Asset Catalog (iOS)
+
+```python
+from resforge.apple import Appearance, AppleColor, AssetCatalog
+from resforge.types import Color
+
+with AssetCatalog("iOS/App", "Assets") as ac:
+    ac.colorset(
+        "Background",
+        "#ffffff",
+        AppleColor(Color.from_hex("#000000"), appearances=[Appearance.Dark]),
+    )
+
+```
+
+```json
+{
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "colors": [
+    {
+      "idiom": "universal",
+      "color": {
+        "components": {
+          "red": "1.000",
+          "green": "1.000",
+          "blue": "1.000",
+          "alpha": "1.000"
+        },
+        "color-space": "srgb"
+      }
+    },
+    {
+      "idiom": "universal",
+      "color": {
+        "components": {
+          "red": "0.000",
+          "green": "0.000",
+          "blue": "0.000",
+          "alpha": "1.000"
+        },
+        "color-space": "srgb"
+      },
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ]
+    }
+  ]
+}
+```
+
 ## Features
 
 - Fluent, Pythonic API
 - Supports all Android `res/values/` types
-- Automatic XML formatting
-- Clean grouping with comments
-- CI/CD friendly
+- Built-in validation for Asset Catalog logic
 
-## Full Example
+## Full Android Example
 
 ```python
 from resforge.android import PluralValues, ValuesWriter, dp, sp
@@ -137,7 +178,7 @@ with ValuesWriter("res/values/resources.xml") as res:
 
 ## Roadmap
 
-- iOS support (`xcassets`)
+- Support for more Asset Catalog types (ImageSet, IconSet)
 
 ## License
 
