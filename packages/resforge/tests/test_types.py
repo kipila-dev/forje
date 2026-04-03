@@ -53,6 +53,6 @@ class TestColor:
         assert c.to_hex == "#00000000"
 
     def test_to_hex_round_trip(self):
-        hex = "#12345678"
-        c = Color.from_hex(hex)
-        assert c.to_hex == hex
+        hex_str = "#12345678"
+        c = Color.from_hex(hex_str)
+        assert c.to_hex == hex_str

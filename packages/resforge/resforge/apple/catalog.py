@@ -1,58 +1,51 @@
-import json
 import shutil
-from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, Self
+from typing import Self
 
 from resforge.types import Color
+from resforge.utils import require_context
 
+from .base import write_contents
 from .colorset import ColorSet
 from .types import AppleColor
 
 
-def _write_contents(path: str | Path, contents: Dict[str, Any]) -> None:
-    path = Path(path)
-    with open(path / "Contents.json", "w") as f:
-        json.dump(contents, f, indent=2)
-
-
-class AssetNode(ABC):
-    def __init__(self, path: str | Path, name: str, extension: str) -> None:
-        self._path = Path(path) / f"{name}.{extension}"
-
-    def __enter__(self) -> Self:
-        self._path.mkdir(parents=True, exist_ok=True)
-        return self
-
-    def __exit__(self, exc_type, *_) -> None:
-        if exc_type is None:
-            contents = self._create_contents()
-            _write_contents(self._path, contents)
-        else:
-            if self._path.exists():
-                shutil.rmtree(self._path)
-
-    @abstractmethod
-    def _create_contents(self) -> Dict[str, Any]: ...
-
-
 class AssetCatalog:
+    """
+    A fluent context manager for generating Apple Asset Catalogs (.xcassets).
+
+    To ensure atomic writes, it works in a temporary directory and only swaps
+    to the final destination upon successful completion of the context.
+
+    Example:
+        >>> with AssetCatalog("res/ios", "Assets") as assets:
+        ...     assets.colorset("primary", "#FF0000")
+    """
+
     def __init__(self, path: str | Path, name: str) -> None:
+        """
+        Args:
+            path: The filesystem path where the asset catalog will be saved.
+            name: The name of the catalog (without .xcassets extension).
+        """
         output_dir = Path(path).resolve()
         self._temp_path = output_dir / f".tmp_{name}.xcassets"
         self._final_path = output_dir / f"{name}.xcassets"
+        self._active = False
 
     def __enter__(self) -> Self:
+        self._active = True
         if self._temp_path.exists():
             shutil.rmtree(self._temp_path)
         self._temp_path.mkdir(parents=True)
         return self
 
     def __exit__(self, exc_type, *_) -> None:
+        self._active = False
         try:
             if exc_type is None:
                 contents = {"info": {"author": "xcode", "version": 1}}
-                _write_contents(self._temp_path, contents)
+                write_contents(self._temp_path, contents)
                 if self._final_path.exists():
                     shutil.rmtree(self._final_path)
                 self._temp_path.rename(self._final_path)
@@ -60,73 +53,16 @@ class AssetCatalog:
             if self._temp_path.exists():
                 shutil.rmtree(self._temp_path)
 
-    def appiconset(self, name: str) -> Self:
-        return self
-
-    def arimageset(self, name: str) -> Self:
-        return self
-
-    def arresourcegroup(self, name: str) -> Self:
-        return self
-
-    def brandassets(self, name: str) -> Self:
-        return self
-
-    def cubetextureset(self, name: str) -> Self:
-        return self
-
-    def dataset(self, name: str) -> Self:
-        return self
-
-    def gcdashboardimage(self, name: str) -> Self:
-        return self
-
-    def gcleaderboard(self, name: str) -> Self:
-        return self
-
-    def gcleaderboardset(self, name: str) -> Self:
-        return self
-
-    def group(self, name: str) -> Self:
-        return self
-
-    def iconset(self, name: str) -> Self:
-        return self
-
-    def imageset(self, name: str) -> Self:
-        return self
-
-    def imagestack(self, name: str) -> Self:
-        return self
-
-    def imagestacklayer(self, name: str) -> Self:
-        return self
-
-    def launchimage(self, name: str) -> Self:
-        return self
-
-    def mipmapset(self, name: str) -> Self:
-        return self
-
+    @require_context
     def colorset(self, name: str, *colors: str | Color | AppleColor) -> Self:
+        """
+        Creates a .colorset folder within the catalog.
+
+        Args:
+            name: The name of the color resource as it will appear in Xcode.
+            *colors: One or more color definitions. Accepts hex strings,
+                Color objects, or AppleColor objects for platform-specific specs.
+        """
         with ColorSet(self._temp_path, name) as cs:
             cs.color(*colors)
-        return self
-
-    def spriteatlas(self, name: str) -> Self:
-        return self
-
-    def sticker(self, name: str) -> Self:
-        return self
-
-    def stickerpack(self, name: str) -> Self:
-        return self
-
-    def stickersequence(self, name: str) -> Self:
-        return self
-
-    def textureset(self, name: str) -> Self:
-        return self
-
-    def complicationset(self, name: str) -> Self:
         return self

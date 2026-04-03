@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Pattern, Self
 
 from resforge.types import Color
+from resforge.utils import require_context
 
 from .dimension import Dimension
 from .plural import PluralValues
@@ -32,13 +33,16 @@ class ValuesWriter:
         self._path = Path(path)
         self._root: ET.Element | None = None
         self._seen_names: dict[str, set[str]] = {}
+        self._active = False
 
     def __enter__(self) -> Self:
+        self._active = True
         self._root = ET.Element("resources")
         self._seen_names = {}
         return self
 
     def __exit__(self, exc_type, *_) -> None:
+        self._active = False
         try:
             if exc_type is None and self._root is not None:
                 self._path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,6 +98,17 @@ class ValuesWriter:
             elem.text = text
         return elem
 
+    def _array(
+        self, tag: str, name: str, values: list[int] | list[str], escape: bool = False
+    ) -> Self:
+        parent = self._append(tag, name)
+        for val in values:
+            item = ET.SubElement(parent, "item")
+            sanitized = self._prepare_text(str(val)) if escape else str(val)
+            item.text = str(val).lower() if isinstance(val, bool) else sanitized
+        return self
+
+    @require_context
     def comment(self, text: str) -> Self:
         """Appends an XML comment to group or annotate resources."""
         if self._root is None:
@@ -102,6 +117,7 @@ class ValuesWriter:
         self._root.append(ET.Comment(f" {sanitized} "))
         return self
 
+    @require_context
     def string(self, **values: str) -> Self:
         """
         Appends one or more <string> resources.
@@ -110,6 +126,7 @@ class ValuesWriter:
             self._append("string", name, self._prepare_text(val))
         return self
 
+    @require_context
     def boolean(self, **values: bool) -> Self:
         """
         Appends one or more <bool> resources.
@@ -119,6 +136,7 @@ class ValuesWriter:
             self._append("bool", name, str(val).lower())
         return self
 
+    @require_context
     def color(self, **values: str | Color) -> Self:
         """
         Appends one or more <color> resources.
@@ -140,6 +158,7 @@ class ValuesWriter:
             self._append("color", name, color.to_hex)
         return self
 
+    @require_context
     def dimension(self, **values: Dimension) -> Self:
         """
         Appends one or more <dimen> resources using Dimension objects.
@@ -148,6 +167,7 @@ class ValuesWriter:
             self._append("dimen", name, str(val))
         return self
 
+    @require_context
     def res_id(self, *values: str) -> Self:
         """
         Appends one or more <item type="id"> resources.
@@ -157,22 +177,14 @@ class ValuesWriter:
             self._append("item", name, attrs={"type": "id"})
         return self
 
+    @require_context
     def integer(self, **values: int) -> Self:
         """Appends one or more <integer> resources."""
         for name, val in values.items():
             self._append("integer", name, str(val))
         return self
 
-    def _array(
-        self, tag: str, name: str, values: list[int] | list[str], escape: bool = False
-    ) -> Self:
-        parent = self._append(tag, name)
-        for val in values:
-            item = ET.SubElement(parent, "item")
-            sanitized = self._prepare_text(str(val)) if escape else str(val)
-            item.text = str(val).lower() if isinstance(val, bool) else sanitized
-        return self
-
+    @require_context
     def typed_array(self, name: str, values: list[str]) -> Self:
         """
         Appends a generic <array> (Typed Array).
@@ -180,14 +192,17 @@ class ValuesWriter:
         """
         return self._array("array", name, values)
 
+    @require_context
     def integer_array(self, name: str, values: list[int]) -> Self:
         """Appends an <integer-array> resource."""
         return self._array("integer-array", name, values)
 
+    @require_context
     def string_array(self, name: str, values: list[str]) -> Self:
         """Appends a <string-array> resource."""
         return self._array("string-array", name, values)
 
+    @require_context
     def plurals(self, **values: PluralValues) -> Self:
         """
         Appends a <plurals> resource with quantity-specific strings.
@@ -203,6 +218,7 @@ class ValuesWriter:
                 item.text = self._prepare_text(str(text))
         return self
 
+    @require_context
     def style(self, name: str, parent: str | None = None, **items: str) -> Self:
         """
         Appends a <style> resource.
