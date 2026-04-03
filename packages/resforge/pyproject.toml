@@ -5,20 +5,21 @@ build-backend = "hatchling.build"
 [project]
 name = "resforge"
 version = "0.1.0"
-description = "Fluent builder for Android resources"
+description = "A type-safe Python DSL for cross-platform mobile resource generation"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Ondrej Kipila", email = "ondrej@kipila.dev" }]
 keywords = [
-  "android",
-  "resources",
-  "mobile",
-  "tooling",
-  "asset",
-  "builder",
-  "pipeline",
-  "ci",
+  "dsl",
+  "design-tokens",
+  "android-xml",
+  "xcassets",
+  "code-generation",
+  "white-label",
+  "mobile-infra",
+  "type-safety",
+  "automation",
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -26,6 +27,8 @@ classifiers = [
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
 ]
 
 [project.optional-dependencies]
