@@ -129,7 +129,7 @@ with ValuesWriter("res/values/resources.xml") as res:
     res.color(
         primary="#FF6200EE",
         secondary="#FF03DAC5",
-        accent=0x6200EE,
+        accent="#6200EE",
     )
 
     res.comment("Dimensions")
