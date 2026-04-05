@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, assert_never
+from typing import Any, Dict, Self, assert_never
 
 from resforge.types import Color
 
@@ -12,7 +12,7 @@ class ColorSet(AssetNode):
         super().__init__(path, name, "colorset")
         self._colors: list[AppleColor] = []
 
-    def color(self, *colors: str | Color | AppleColor) -> None:
+    def color(self, *colors: str | Color | AppleColor) -> Self:
         for c in colors:
             match c:
                 case str():
@@ -23,6 +23,7 @@ class ColorSet(AssetNode):
                     self._colors.append(c)
                 case _:
                     assert_never(c)
+        return self
 
     def _create_contents(self) -> Dict[str, Any]:
         self._validate()
@@ -50,10 +51,10 @@ class ColorSet(AssetNode):
 
         if frozenset({"dark", "high"}) in seen and frozenset({"dark"}) not in seen:
             raise ValueError(
-                "ColorSet with [dark high]' variant must also include a [dark] variant"
+                "ColorSet with [dark, high]' variant must also include a [dark] variant"
             )
 
         if frozenset({"light", "high"}) in seen and frozenset({"light"}) not in seen:
             raise ValueError(
-                "ColorSet with [light high] variant must also include a [light] variant"
+                "ColorSet with [light, high] variant must also include a [light] variant"
             )

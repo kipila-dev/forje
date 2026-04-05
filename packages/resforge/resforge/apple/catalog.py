@@ -18,7 +18,7 @@ class AssetCatalog:
     to the final destination upon successful completion of the context.
 
     Example:
-        >>> with AssetCatalog("res/ios", "Assets") as assets:
+        >>> with AssetCatalog("App", "Assets") as assets:
         ...     assets.colorset("primary", "#FF0000")
     """
 
