@@ -3,11 +3,13 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Pattern, Self
 
+from resforge._utils import require_context
 from resforge.types import Color
-from resforge.utils import require_context
 
 from .dimension import Dimension
 from .plural import PluralValues
+
+__all__ = ["ValuesWriter"]
 
 _NAME_PATTERN = re.compile(r"^[a-z_][a-z0-9_]*$")
 _STYLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_\.]*$")

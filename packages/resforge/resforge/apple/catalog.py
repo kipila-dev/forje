@@ -2,12 +2,14 @@ import shutil
 from pathlib import Path
 from typing import Self
 
+from resforge._utils import require_context
 from resforge.types import Color
-from resforge.utils import require_context
 
 from .base import write_contents
 from .colorset import ColorSet
 from .types import AppleColor
+
+__all__ = ["AssetCatalog"]
 
 
 class AssetCatalog:
