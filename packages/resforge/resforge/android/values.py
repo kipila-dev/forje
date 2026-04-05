@@ -44,7 +44,7 @@ class ValuesWriter:
 
     def __exit__(self, exc_type, *_) -> None:
         self._active = False
-        if exc_type is None and self._root is not None:
+        if exc_type is None:
             self._path.parent.mkdir(parents=True, exist_ok=True)
             ET.indent(self._root, space=" " * 4, level=0)
             tree = ET.ElementTree(self._root)
