@@ -1,7 +1,7 @@
 # resforge
 
 A type-safe Python DSL for generating Android XML resources and Xcode Asset
-Catalogs (`.xcassets).
+Catalogs (`.xcassets`).
 
 ## Installation
 
