@@ -31,36 +31,31 @@ class ValuesWriter:
             path: The filesystem path where the XML will be saved.
         """
         self._path = Path(path)
-        self._root: ET.Element | None = None
-        self._seen_names: dict[str, set[str]] = {}
         self._active = False
+
+        # Structure: {"string": ["app_name"], ...}
+        self._names: dict[str, set[str]] = {}
 
     def __enter__(self) -> Self:
         self._active = True
         self._root = ET.Element("resources")
-        self._seen_names = {}
+        self._names.clear()
         return self
 
     def __exit__(self, exc_type, *_) -> None:
         self._active = False
-        try:
-            if exc_type is None and self._root is not None:
-                self._path.parent.mkdir(parents=True, exist_ok=True)
+        if exc_type is None and self._root is not None:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            ET.indent(self._root, space=" " * 4, level=0)
+            tree = ET.ElementTree(self._root)
+            tree.write(
+                self._path,
+                encoding="utf-8",
+                xml_declaration=True,
+                short_empty_elements=True,
+            )
 
-                ET.indent(self._root, space="    ", level=0)
-
-                tree = ET.ElementTree(self._root)
-                tree.write(
-                    self._path,
-                    encoding="utf-8",
-                    xml_declaration=True,
-                    short_empty_elements=True,
-                )
-        finally:
-            self._root = None
-            self._seen_names.clear()
-
-    def _prepare_text(self, text: str) -> str:
+    def _sanitize(self, text: str) -> str:
         text = text.replace("'", r"\'")
         text = text.replace('"', r"\"")
         text = text.replace("\n", r"\n")
@@ -68,51 +63,45 @@ class ValuesWriter:
             text = "\\" + text
         return text
 
+    def _validate_name(
+        self, tag: str, name: str, pattern: Pattern[str] = _NAME_PATTERN
+    ) -> None:
+        if not pattern.match(name):
+            raise ValueError(f"Invalid resource name '{name}'.")
+
+        names_for_tag = self._names.setdefault(tag, set())
+        if name in names_for_tag:
+            raise ValueError(f"Duplicate resource name '{name}' for tag <{tag}>.")
+        names_for_tag.add(name)
+
     def _append(
         self,
         tag: str,
         name: str,
         text: str | None = None,
         attrs: dict[str, str] | None = None,
-        name_validation_pattern: Pattern[str] = _NAME_PATTERN,
+        pattern: Pattern[str] = _NAME_PATTERN,
     ) -> ET.Element:
-        if self._root is None:
-            raise RuntimeError("ValuesWriter must be used as a context manager.")
-
-        if not name_validation_pattern.match(name):
-            raise ValueError(f"Invalid resource name '{name}'.")
-
-        seen_for_tag = self._seen_names.setdefault(tag, set())
-        if name in seen_for_tag:
-            raise ValueError(
-                f"Duplicate resource name '{name}' for tag <{tag}>. "
-                f"The name '{name}' has already been defined with this type."
-            )
-        seen_for_tag.add(name)
-
-        all_attrs = {"name": name}
-        if attrs:
-            all_attrs.update(attrs)
-        elem = ET.SubElement(self._root, tag, attrib=all_attrs)
+        self._validate_name(tag, name, pattern)
+        attrs = {"name": name, **(attrs or {})}
+        elem = ET.SubElement(self._root, tag, attrib=attrs)
         if text is not None:
             elem.text = text
         return elem
 
-    def _array(
-        self, tag: str, name: str, values: list[int] | list[str], escape: bool = False
+    def _append_array(
+        self, tag: str, name: str, values: list[int] | list[str], sanitize: bool = False
     ) -> Self:
         parent = self._append(tag, name)
         for val in values:
             item = ET.SubElement(parent, "item")
-            sanitized = self._prepare_text(str(val)) if escape else str(val)
+            sanitized = self._sanitize(str(val)) if sanitize else str(val)
             item.text = str(val).lower() if isinstance(val, bool) else sanitized
         return self
 
     @require_context
     def comment(self, text: str) -> Self:
         """Appends an XML comment."""
-        if self._root is None:
-            raise RuntimeError("ValuesWriter must be used as a context manager.")
         sanitized = text.replace("--", "- -")
         self._root.append(ET.Comment(f" {sanitized} "))
         return self
@@ -121,7 +110,7 @@ class ValuesWriter:
     def string(self, **values: str) -> Self:
         """Appends one or more <string> resources."""
         for name, val in values.items():
-            self._append("string", name, self._prepare_text(val))
+            self._append("string", name, self._sanitize(val))
         return self
 
     @require_context
@@ -136,21 +125,15 @@ class ValuesWriter:
         """
         Appends one or more <color> resources.
 
-        Supports standard Android hex strings (#RGB, #ARGB, #RRGGBB, #AARRGGBB).
+        Supported hex string formats are #RGB, #ARGB, #RRGGBB, #AARRGGBB.
 
         Raises:
             ValueError: If the string format is incorrect.
         """
         for name, color in values.items():
-            if not isinstance(color, str | Color):
-                raise TypeError(
-                    f"Color '{name}' must be str or Color, got {type(color).__name__}"
-                )
-
             if isinstance(color, str):
                 color = Color.from_hex(color)
-
-            self._append("color", name, color.to_hex)
+            self._append("color", name, color.hex)
         return self
 
     @require_context
@@ -176,28 +159,28 @@ class ValuesWriter:
 
     @require_context
     def plurals(self, **values: PluralValues) -> Self:
-        """Appends one or more <plurals> resources with quantity strings."""
+        """Appends one or more <plurals> resources."""
         for name, val in values.items():
             parent = self._append("plurals", name)
             for quantity, text in val.items():
                 item = ET.SubElement(parent, "item", attrib={"quantity": quantity})
-                item.text = self._prepare_text(str(text))
+                item.text = self._sanitize(str(text))
         return self
 
     @require_context
     def typed_array(self, name: str, values: list[str]) -> Self:
         """Appends a generic <array> resource."""
-        return self._array("array", name, values)
+        return self._append_array("array", name, values)
 
     @require_context
     def integer_array(self, name: str, values: list[int]) -> Self:
         """Appends an <integer-array> resource."""
-        return self._array("integer-array", name, values)
+        return self._append_array("integer-array", name, values)
 
     @require_context
     def string_array(self, name: str, values: list[str]) -> Self:
         """Appends a <string-array> resource."""
-        return self._array("string-array", name, values)
+        return self._append_array("string-array", name, values, sanitize=True)
 
     @require_context
     def style(self, name: str, parent: str | None = None, **items: str) -> Self:
@@ -207,7 +190,7 @@ class ValuesWriter:
             attrs["parent"] = parent
 
         style_elem = self._append(
-            "style", name, attrs=attrs, name_validation_pattern=_STYLE_NAME_PATTERN
+            "style", name, attrs=attrs, pattern=_STYLE_NAME_PATTERN
         )
         for attr_name, val in items.items():
             ET.SubElement(style_elem, "item", attrib={"name": attr_name}).text = val

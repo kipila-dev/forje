@@ -44,15 +44,15 @@ class TestColor:
     def test_hex_case_insensitive(self):
         assert Color.from_hex("#abc") == Color.from_hex("#ABC")
 
-    def test_to_hex(self):
+    def test_hex(self):
         c = Color(red=1.0, green=0.0, blue=0.0)
-        assert c.to_hex == "#FFFF0000"
+        assert c.hex == "#FFFF0000"
 
-    def test_to_hex_zero_padding(self):
+    def test_hex_zero_padding(self):
         c = Color(red=0.0, green=0.0, blue=0.0, alpha=0.0)
-        assert c.to_hex == "#00000000"
+        assert c.hex == "#00000000"
 
-    def test_to_hex_round_trip(self):
+    def test_hex_round_trip(self):
         hex_str = "#12345678"
         c = Color.from_hex(hex_str)
-        assert c.to_hex == hex_str
+        assert c.hex == hex_str

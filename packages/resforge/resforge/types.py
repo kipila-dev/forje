@@ -26,9 +26,7 @@ def _parse_hex(value: str) -> tuple[float, float, float, float]:
 
 @dataclass(frozen=True)
 class Color:
-    """
-    Represents a color using float components (0.0 to 1.0).
-    """
+    """Represents a color using float components (0.0 to 1.0)."""
 
     red: float
     green: float
@@ -39,7 +37,7 @@ class Color:
         for field in (self.red, self.green, self.blue, self.alpha):
             if not 0.0 <= field <= 1.0:
                 raise ValueError(
-                    f"Color components must be between 0 and 1 (got {field})"
+                    f"Color components must be between 0.0 and 1.0 (got {field})"
                 )
 
     @classmethod
@@ -49,7 +47,7 @@ class Color:
         return cls(red=r, green=g, blue=b, alpha=a)
 
     @property
-    def to_hex(self) -> str:
+    def hex(self) -> str:
         """Returns the color as a #AARRGGBB string."""
         a = round(self.alpha * 255)
         r = round(self.red * 255)
