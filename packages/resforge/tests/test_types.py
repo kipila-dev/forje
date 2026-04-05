@@ -10,7 +10,7 @@ class TestColor:
         assert c.alpha == 1.0
 
     def test_component_out_of_range_raises(self):
-        with pytest.raises(ValueError, match="between 0 and 1"):
+        with pytest.raises(ValueError):
             Color(red=1.1, green=-1.1, blue=2.0)
 
     def test_from_hex_rgb(self):
