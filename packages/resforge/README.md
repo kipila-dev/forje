@@ -1,7 +1,7 @@
 # resforge
 
-A fluent Python library for generating Android XML resources and Xcode Asset
-Catalogs (`.xcassets`).
+A type-safe Python DSL for generating Android XML resources and Xcode Asset
+Catalogs (`.xcassets).
 
 ## Installation
 
@@ -50,13 +50,12 @@ with ValuesWriter("res/values/resources.xml") as res:
 
 ```python
 from resforge.apple import Appearance, AppleColor, AssetCatalog
-from resforge.types import Color
 
-with AssetCatalog("iOS/App", "Assets") as ac:
+with AssetCatalog("App", "Assets") as ac:
     ac.colorset(
         "Background",
         "#ffffff",
-        AppleColor(Color.from_hex("#000000"), appearances=[Appearance.Dark]),
+        AppleColor("#000000", appearances=[Appearance.Dark]),
     )
 
 ```

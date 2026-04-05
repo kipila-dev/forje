@@ -16,9 +16,9 @@ class ColorSet(AssetNode):
         for c in colors:
             match c:
                 case str():
-                    self._colors.append(AppleColor(components=Color.from_hex(c)))
+                    self._colors.append(AppleColor(Color.from_hex(c)))
                 case Color():
-                    self._colors.append(AppleColor(components=c))
+                    self._colors.append(AppleColor(c))
                 case AppleColor():
                     self._colors.append(c)
                 case _:

@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Literal
 
@@ -22,12 +22,15 @@ class Appearance(Enum):
 
 @dataclass
 class AppleColor:
-    components: Color
+    color: InitVar[str | Color]
     color_space: ColorSpace = "srgb"
     idiom: Idiom = "universal"
     subtype: Subtype | None = None
     appearances: List[Appearance] = field(default_factory=list)
     display_gamut: DisplayGamut | None = None
+
+    def __post_init__(self, color: str | Color) -> None:
+        self.components = color if isinstance(color, Color) else Color.from_hex(color)
 
     def to_dict(self) -> Dict[str, Any]:
         result: dict[str, Any] = {
