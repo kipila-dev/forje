@@ -59,7 +59,7 @@ class AssetCatalog:
         Creates a .colorset folder within the catalog.
 
         Args:
-            name: The name of the color resource as it will appear in Xcode.
+            name: The name of the color resource (without .colorset extension).
             *colors: One or more color definitions. Accepts hex strings,
                 Color objects, or AppleColor objects for platform-specific specs.
         """

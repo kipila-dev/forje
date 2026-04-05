@@ -21,8 +21,8 @@ class ValuesWriter:
     and arrays. Validates resource names and color formats at runtime.
 
     Example:
-        >>> with ValuesWriter("res/values/my_values.xml") as res:
-        ...     res.dimension(padding_small=dp(8)).color(primary=0xFF0000)
+        >>> with ValuesWriter("res/values/resources.xml") as res:
+        ...     res.dimension(padding_small=dp(8)).color(primary="#FF0000")
     """
 
     def __init__(self, path: str | Path) -> None:
@@ -110,7 +110,7 @@ class ValuesWriter:
 
     @require_context
     def comment(self, text: str) -> Self:
-        """Appends an XML comment to group or annotate resources."""
+        """Appends an XML comment."""
         if self._root is None:
             raise RuntimeError("ValuesWriter must be used as a context manager.")
         sanitized = text.replace("--", "- -")
@@ -119,19 +119,14 @@ class ValuesWriter:
 
     @require_context
     def string(self, **values: str) -> Self:
-        """
-        Appends one or more <string> resources.
-        """
+        """Appends one or more <string> resources."""
         for name, val in values.items():
             self._append("string", name, self._prepare_text(val))
         return self
 
     @require_context
     def boolean(self, **values: bool) -> Self:
-        """
-        Appends one or more <bool> resources.
-        Converts Python booleans to lowercase 'true'/'false'.
-        """
+        """Appends one or more <bool> resources."""
         for name, val in values.items():
             self._append("bool", name, str(val).lower())
         return self
@@ -160,19 +155,14 @@ class ValuesWriter:
 
     @require_context
     def dimension(self, **values: Dimension) -> Self:
-        """
-        Appends one or more <dimen> resources using Dimension objects.
-        """
+        """Appends one or more <dimen> resources."""
         for name, val in values.items():
             self._append("dimen", name, str(val))
         return self
 
     @require_context
     def res_id(self, *values: str) -> Self:
-        """
-        Appends one or more <item type="id"> resources.
-        Typically used in ids.xml to pre-declare resource IDs.
-        """
+        """Appends one or more <item type="id"> resources."""
         for name in values:
             self._append("item", name, attrs={"type": "id"})
         return self
@@ -185,11 +175,18 @@ class ValuesWriter:
         return self
 
     @require_context
+    def plurals(self, **values: PluralValues) -> Self:
+        """Appends one or more <plurals> resources with quantity strings."""
+        for name, val in values.items():
+            parent = self._append("plurals", name)
+            for quantity, text in val.items():
+                item = ET.SubElement(parent, "item", attrib={"quantity": quantity})
+                item.text = self._prepare_text(str(text))
+        return self
+
+    @require_context
     def typed_array(self, name: str, values: list[str]) -> Self:
-        """
-        Appends a generic <array> (Typed Array).
-        Used for arrays of references (e.g., drawables or colors).
-        """
+        """Appends a generic <array> resource."""
         return self._array("array", name, values)
 
     @require_context
@@ -203,29 +200,8 @@ class ValuesWriter:
         return self._array("string-array", name, values)
 
     @require_context
-    def plurals(self, **values: PluralValues) -> Self:
-        """
-        Appends a <plurals> resource with quantity-specific strings.
-
-        Args:
-            name: The resource name.
-            values: A dictionary of quantities (zero, one, etc.) to strings.
-        """
-        for name, val in values.items():
-            parent = self._append("plurals", name)
-            for quantity, text in val.items():
-                item = ET.SubElement(parent, "item", attrib={"quantity": quantity})
-                item.text = self._prepare_text(str(text))
-        return self
-
-    @require_context
     def style(self, name: str, parent: str | None = None, **items: str) -> Self:
-        """
-        Appends a <style> resource.
-
-        Example:
-            writer.style("AppTheme", parent="Theme.Material", colorPrimary="@color/blue")
-        """
+        """Appends a <style> resource."""
         attrs = {}
         if parent:
             attrs["parent"] = parent
