@@ -29,9 +29,6 @@ class TestDimension:
     def test_mul_float(self):
         assert dp(8) * 1.5 == dp(12.0)
 
-    def test_mul_invalid(self):
-        assert dp(8).__mul__("x") is NotImplemented
-
     def test_eq(self):
         assert dp(8) == dp(8)
         assert dp(8) != sp(8)

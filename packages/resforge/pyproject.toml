@@ -37,3 +37,37 @@ dev = ["pytest"]
 [project.urls]
 Homepage = "https://kipila.dev"
 Repository = "https://github.com/ok100/resforge"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["ALL"]
+  "ANN001",
+  "ANN002",
+  "ANN003",
+  "COM812",
+  "COM819",
+  "D100",
+  "D102",
+  "D104",
+  "D105",
+  "D107",
+  "D206",
+  "D300",
+  "D401",
+  "E111",
+  "E114",
+  "E117",
+  "FIX",
+  "I001",
+  "PLR2004",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "TD",
+  "W191",
+]
+ignore = [
+fixable = ["ALL"]

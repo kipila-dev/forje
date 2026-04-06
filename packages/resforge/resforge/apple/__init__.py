@@ -3,9 +3,9 @@ from .types import (Appearance, AppleColor, ColorSpace, DisplayGamut, Idiom,
                     Subtype)
 
 __all__ = [
-    "AssetCatalog",
     "Appearance",
     "AppleColor",
+    "AssetCatalog",
     "ColorSpace",
     "DisplayGamut",
     "Idiom",

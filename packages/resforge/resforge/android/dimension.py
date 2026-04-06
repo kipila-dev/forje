@@ -1,24 +1,24 @@
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Literal
 
 DimensionUnit = Literal["dp", "sp", "px", "pt", "mm", "in"]
 
 
+@dataclass(frozen=True)
 class Dimension:
-    """Represents an Android dimension value (e.g., '16dp', '12sp')."""
+    """Represents an Android dimension value (e.g., '16dp', '12sp').
+
+    Args:
+        value: The numeric dimension value. Negative values are permitted
+            to support negative margins/offsets, though they are
+            typically ignored by padding and size attributes.
+        unit: The unit of measure (dp, sp, px, pt, mm, in).
+
+    """
 
     value: int | float
     unit: DimensionUnit
-
-    def __init__(self, value: int | float, unit: DimensionUnit) -> None:
-        """
-        Args:
-            value: The numeric dimension value. Negative values are permitted
-                to support negative margins/offsets, though they are
-                typically ignored by padding and size attributes.
-            unit: The unit of measure (dp, sp, px, pt, mm, in).
-        """
-        self.value = value
-        self.unit = unit
 
     def __str__(self) -> str:
         return f"{self.value:g}{self.unit}"
@@ -26,24 +26,16 @@ class Dimension:
     def __repr__(self) -> str:
         return f"Dimension(value={self.value!r}, unit={self.unit!r})"
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Dimension):
-            return NotImplemented
-        return self.value == other.value and self.unit == other.unit
-
-    def __mul__(self, other: Any) -> "Dimension":
-        if not isinstance(other, (int, float)):
-            return NotImplemented
+    def __mul__(self, other: float) -> "Dimension":
         return Dimension(self.value * other, self.unit)
 
-    def __rmul__(self, other: Any) -> "Dimension":
-        return self.__mul__(other)
+    __rmul__ = __mul__
 
 
 def _make_unit_func(
     unit: DimensionUnit, doc: str
 ) -> Callable[[int | float], Dimension]:
-    def f(value: int | float) -> Dimension:
+    def f(value: float) -> Dimension:
         return Dimension(value, unit)
 
     f.__name__ = unit

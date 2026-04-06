@@ -1,6 +1,6 @@
 from dataclasses import InitVar, dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Literal
+from typing import Any, Literal
 
 from resforge.types import Color
 
@@ -11,28 +11,44 @@ Subtype = Literal["mac-catalyst"]
 
 
 class Appearance(Enum):
+    """A color appearance variant.
+
+    Attributes:
+        Light: Standard light mode.
+        Dark: Standard dark mode.
+        HighContrast: High contrast mode.
+
+    """
+
     Light = ("luminosity", "light")
     Dark = ("luminosity", "dark")
     HighContrast = ("contrast", "high")
 
-    def __init__(self, category: str, setting: str):
+    def __init__(self, category: str, setting: str) -> None:
         self.category = category
         self.setting = setting
 
 
 @dataclass
 class AppleColor:
+    """A single color entry for an Apple asset catalog.
+
+    Represents one color variant within a ColorSet, targeting a specific
+    idiom, appearance, and display configuration.
+    """
+
     color: InitVar[str | Color]
+    components: Color = field(init=False)
     color_space: ColorSpace = "srgb"
     idiom: Idiom = "universal"
     subtype: Subtype | None = None
-    appearances: List[Appearance] = field(default_factory=list)
+    appearances: list[Appearance] = field(default_factory=list)
     display_gamut: DisplayGamut | None = None
 
     def __post_init__(self, color: str | Color) -> None:
         self.components = color if isinstance(color, Color) else Color.from_hex(color)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
             "idiom": self.idiom,
             "color": {

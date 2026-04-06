@@ -9,7 +9,8 @@ _HEX_COLOR_RE = re.compile(r"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})
 
 def _parse_hex(value: str) -> tuple[float, float, float, float]:
     if not _HEX_COLOR_RE.fullmatch(value):
-        raise ValueError(f"Invalid hex color: {value!r}")
+        msg = f"Invalid hex color: {value!r}"
+        raise ValueError(msg)
 
     hex_str = value[1:]
 
@@ -36,9 +37,8 @@ class Color:
     def __post_init__(self) -> None:
         for field in (self.red, self.green, self.blue, self.alpha):
             if not 0.0 <= field <= 1.0:
-                raise ValueError(
-                    f"Color components must be between 0.0 and 1.0 (got {field})"
-                )
+                msg = f"Color components must be between 0.0 and 1.0 (got {field})"
+                raise ValueError(msg)
 
     @classmethod
     def from_hex(cls, value: str) -> Self:

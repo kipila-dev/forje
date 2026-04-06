@@ -2,8 +2,7 @@ from typing import NotRequired, TypedDict
 
 
 class PluralValues(TypedDict):
-    """
-    Represents the quantity-based strings for an Android plurals resource.
+    """Represents the quantity-based strings for an Android plurals resource.
 
     Attributes:
         zero: String for quantity 0 (optional).
@@ -12,6 +11,7 @@ class PluralValues(TypedDict):
         few: String for quantity 'few' (optional).
         many: String for quantity 'many' (optional).
         other: The default fallback string (required).
+
     """
 
     zero: NotRequired[str]

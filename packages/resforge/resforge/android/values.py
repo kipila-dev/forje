@@ -1,7 +1,8 @@
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import Pattern, Self
+from re import Pattern
+from typing import Self
 
 from resforge._utils import require_context
 from resforge.types import Color
@@ -16,8 +17,7 @@ _STYLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_\.]*$")
 
 
 class ValuesWriter:
-    """
-    A fluent context manager for generating Android XML resource files.
+    """A fluent context manager for generating Android XML resource files.
 
     Provides a type-safe interface for creating strings, dimensions, colors,
     and arrays. Validates resource names and color formats at runtime.
@@ -25,12 +25,15 @@ class ValuesWriter:
     Example:
         >>> with ValuesWriter("res/values/resources.xml") as res:
         ...     res.dimension(padding_small=dp(8)).color(primary="#FF0000")
+
     """
 
     def __init__(self, path: str | Path) -> None:
-        """
+        """Initializes the ValuesWriter.
+
         Args:
             path: The filesystem path where the XML will be saved.
+
         """
         self._path = Path(path)
         self._active = False
@@ -69,11 +72,13 @@ class ValuesWriter:
         self, tag: str, name: str, pattern: Pattern[str] = _NAME_PATTERN
     ) -> None:
         if not pattern.match(name):
-            raise ValueError(f"Invalid resource name '{name}'.")
+            msg = f"Invalid resource name '{name}'."
+            raise ValueError(msg)
 
         names_for_tag = self._names.setdefault(tag, set())
         if name in names_for_tag:
-            raise ValueError(f"Duplicate resource name '{name}' for tag <{tag}>.")
+            msg = f"Duplicate resource name '{name}' for tag <{tag}>."
+            raise ValueError(msg)
         names_for_tag.add(name)
 
     def _append(
@@ -92,7 +97,12 @@ class ValuesWriter:
         return elem
 
     def _append_array(
-        self, tag: str, name: str, values: list[int] | list[str], sanitize: bool = False
+        self,
+        tag: str,
+        name: str,
+        values: list[int] | list[str],
+        *,
+        sanitize: bool = False,
     ) -> Self:
         parent = self._append(tag, name)
         for val in values:
@@ -124,18 +134,17 @@ class ValuesWriter:
 
     @require_context
     def color(self, **values: str | Color) -> Self:
-        """
-        Appends one or more <color> resources.
+        """Appends one or more <color> resources.
 
         Supported hex string formats are #RGB, #ARGB, #RRGGBB, #AARRGGBB.
 
         Raises:
             ValueError: If the string format is incorrect.
+
         """
         for name, color in values.items():
-            if isinstance(color, str):
-                color = Color.from_hex(color)
-            self._append("color", name, color.hex)
+            resolved = Color.from_hex(color) if isinstance(color, str) else color
+            self._append("color", name, resolved.hex)
         return self
 
     @require_context
