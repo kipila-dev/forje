@@ -71,3 +71,8 @@ ignore = [
   "W191",
 ]
 fixable = ["ALL"]
+
+[tool.basedpyright]
+venvPath = "."
+venv = ".venv"
+typeCheckingMode = "standard"
