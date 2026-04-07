@@ -6,31 +6,41 @@ from resforge.types import Color
 class TestColor:
     def test_from_components(self):
         c = Color(red=0.5, green=0.5, blue=0.5)
-        assert c.red == 0.5 and c.green == 0.5 and c.blue == 0.5
+        assert c.red == 0.5
+        assert c.green == 0.5
+        assert c.blue == 0.5
         assert c.alpha == 1.0
 
     def test_component_out_of_range_raises(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Color components"):
             Color(red=1.1, green=-1.1, blue=2.0)
 
     def test_from_hex_rgb(self):
         c = Color.from_hex("#FFF")
-        assert c.red == 1.0 and c.green == 1.0 and c.blue == 1.0
+        assert c.red == 1.0
+        assert c.green == 1.0
+        assert c.blue == 1.0
         assert c.alpha == 1.0
 
     def test_from_hex_argb(self):
         c = Color.from_hex("#8FFF")
-        assert c.red == 1.0 and c.green == 1.0 and c.blue == 1.0
+        assert c.red == 1.0
+        assert c.green == 1.0
+        assert c.blue == 1.0
         assert c.alpha == pytest.approx(0x88 / 255)
 
     def test_from_hex_rrggbb(self):
         c = Color.from_hex("#FFFFFF")
-        assert c.red == 1.0 and c.green == 1.0 and c.blue == 1.0
+        assert c.red == 1.0
+        assert c.green == 1.0
+        assert c.blue == 1.0
         assert c.alpha == 1.0
 
     def test_from_hex_aarrggbb(self):
         c = Color.from_hex("#80FFFFFF")
-        assert c.red == 1.0 and c.green == 1.0 and c.blue == 1.0
+        assert c.red == 1.0
+        assert c.green == 1.0
+        assert c.blue == 1.0
         assert c.alpha == pytest.approx(0x80 / 255)
 
     @pytest.mark.parametrize("invalid_hex", ["#FF", "#FFFFF", "#GGGGGG", "FFF"])

@@ -1,10 +1,9 @@
-import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
+from defusedxml.ElementTree import parse
 
-from resforge.android import (PluralValues, ValuesWriter, dp, inch, mm, pt, px,
-                              sp)
+from resforge.android import PluralValues, ValuesWriter, dp, inch, mm, pt, px, sp
 from resforge.types import Color
 
 
@@ -51,10 +50,6 @@ def xml_path(tmp_path) -> Path:
     return tmp_path / "res" / "values" / "test.xml"
 
 
-def parse(path: Path) -> ET.Element:
-    return ET.parse(path).getroot()
-
-
 class TestValuesWriterContextManager:
     def test_creates_file(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
@@ -67,9 +62,8 @@ class TestValuesWriterContextManager:
         assert xml_path.parent.exists()
 
     def test_no_write_on_exception(self, xml_path: Path):
-        with pytest.raises(ValueError):
-            with ValuesWriter(xml_path) as _:
-                raise ValueError("oops")
+        with pytest.raises(ValueError, match="oops"), ValuesWriter(xml_path) as _:
+            raise ValueError("oops")
         assert not xml_path.exists()
 
     def test_runtime_error_outside_context(self, xml_path: Path):
@@ -116,15 +110,14 @@ class TestString:
         assert elem.text.startswith("\\")
 
     def test_duplicate_raises(self, xml_path: Path):
-        with pytest.raises(ValueError, match="Duplicate"):
-            with ValuesWriter(xml_path) as res:
-                res.string(foo="a")
+        with ValuesWriter(xml_path) as res:
+            res.string(foo="a")
+            with pytest.raises(ValueError, match="Duplicate"):
                 res.string(foo="b")
 
     def test_invalid_name_raises(self, xml_path: Path):
-        with pytest.raises(ValueError, match="Invalid"):
-            with ValuesWriter(xml_path) as res:
-                res.string(**{"Invalid Name": "val"})
+        with pytest.raises(ValueError, match="Invalid"), ValuesWriter(xml_path) as res:
+            res.string(**{"Invalid Name": "val"})
 
 
 class TestBoolean:
@@ -159,9 +152,8 @@ class TestColor:
         assert elem.text == "#FF6200EE"
 
     def test_invalid_string_raises(self, xml_path: Path):
-        with pytest.raises(ValueError):
-            with ValuesWriter(xml_path) as res:
-                res.color(primary="notacolor")
+        with pytest.raises(ValueError, match="Invalid"), ValuesWriter(xml_path) as res:
+            res.color(primary="notacolor")
 
 
 class TestDimensionWriter:

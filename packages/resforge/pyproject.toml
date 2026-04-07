@@ -32,14 +32,15 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "defusedxml"]
 
 [project.urls]
 Homepage = "https://kipila.dev"
 Repository = "https://github.com/ok100/resforge"
 
 [tool.ruff]
-line-length = 100
+target-version = "py312"
+line-length = 120
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -71,6 +72,16 @@ ignore = [
   "W191",
 ]
 fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+   "ANN201",
+   "D101",
+   "D103",
+   "EM101",
+   "S101",
+   "TRY301",
+]
 
 [tool.basedpyright]
 venvPath = "."

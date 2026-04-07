@@ -35,7 +35,7 @@ def test_asset_catalog_atomic_failure(tmp_path):
         with AssetCatalog(output_dir, catalog_name) as assets:
             assets.colorset("Primary", "#FF0000")
             assert temp_path.exists()
-            raise RuntimeError()
+            raise RuntimeError
     except RuntimeError:
         pass
 
