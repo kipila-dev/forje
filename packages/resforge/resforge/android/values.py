@@ -7,8 +7,7 @@ from typing import Self
 from resforge._utils import require_context
 from resforge.types import Color
 
-from .dimension import Dimension
-from .plural import PluralValues
+from .types import Dimension, PluralValues
 
 __all__ = ["ValuesWriter"]
 
