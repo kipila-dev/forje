@@ -46,7 +46,7 @@ class AppleColor:
     display_gamut: DisplayGamut | None = None
 
     def __post_init__(self, color: str | Color) -> None:
-        self.components = color if isinstance(color, Color) else Color.from_hex(color)
+        self.components = Color(color)
 
     def to_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {

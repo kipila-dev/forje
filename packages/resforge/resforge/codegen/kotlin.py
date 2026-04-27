@@ -59,15 +59,35 @@ class KotlinFile:
         self._imports.add(fqn)
         return self
 
+    def property(
+        self, name: str, type_: str, value: str, mutability: PropertyMutability = "val"
+    ) -> Self:
+        self._members.append(KotlinProperty(name, type_, value, mutability))
+        return self
+
     def member(self, member: KotlinProperty | KotlinObject) -> Self:
         self._members.append(member)
         return self
 
     def render(self) -> str:
         sections = [f"package {self._package}"]
+
         if self._imports:
             sections.append("\n".join(f"import {fqn}" for fqn in sorted(self._imports)))
-        sections.extend(m.render() for m in self._members)
+
+        current_props = []
+        for member in self._members:
+            if isinstance(member, KotlinProperty):
+                current_props.append(member.render())
+            else:
+                if current_props:
+                    sections.append("\n".join(current_props))
+                    current_props = []
+                sections.append(member.render())
+
+        if current_props:
+            sections.append("\n".join(current_props))
+
         return "\n\n".join(sections) + "\n"
 
     def write(self, path: str | Path) -> None:

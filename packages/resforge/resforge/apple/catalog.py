@@ -45,7 +45,6 @@ class AssetCatalog:
         return self
 
     def __exit__(self, exc_type, *_) -> None:
-        self._active = False
         try:
             if exc_type is None:
                 contents = {"info": {"author": "xcode", "version": 1}}
@@ -56,6 +55,7 @@ class AssetCatalog:
         finally:
             if self._temp_path.exists():
                 shutil.rmtree(self._temp_path)
+            self._active = False
 
     @require_context
     def colorset(self, name: str, *colors: str | Color | AppleColor) -> Self:

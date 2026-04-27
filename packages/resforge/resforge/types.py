@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import re
-from dataclasses import dataclass
-from typing import Self
+from typing import Self, cast
 
 __all__ = ["Color"]
 
@@ -25,26 +26,27 @@ def _parse_hex(value: str) -> tuple[float, float, float, float]:
     return a / 255, r / 255, g / 255, b / 255
 
 
-@dataclass(frozen=True)
 class Color:
-    """Represents a color using float components (0.0 to 1.0)."""
+    """Represents an ARGB color, constructed from a hex string.
 
-    red: float
-    green: float
-    blue: float
-    alpha: float = 1.0
+    Accepts #RGB, #ARGB, #RRGGBB, or #AARRGGBB formats.
+    """
 
-    def __post_init__(self) -> None:
-        for field in (self.red, self.green, self.blue, self.alpha):
-            if not 0.0 <= field <= 1.0:
-                msg = f"Color components must be between 0.0 and 1.0 (got {field})"
-                raise ValueError(msg)
+    __slots__ = ("alpha", "blue", "green", "red")
 
-    @classmethod
-    def from_hex(cls, value: str) -> Self:
-        """Accepts #RGB, #ARGB, #RRGGBB, or #AARRGGBB."""
+    def __new__(cls, value: str | Color) -> Self:
+        if isinstance(value, Color):
+            return cast("Self", value)
+        return super().__new__(cls)
+
+    def __init__(self, value: str | Color) -> None:
+        if isinstance(value, Color):
+            return
         a, r, g, b = _parse_hex(value)
-        return cls(red=r, green=g, blue=b, alpha=a)
+        self.red = r
+        self.green = g
+        self.blue = b
+        self.alpha = a
 
     @property
     def hex(self) -> str:
@@ -53,4 +55,20 @@ class Color:
         r = round(self.red * 255)
         g = round(self.green * 255)
         b = round(self.blue * 255)
-        return f"#{a:02x}{r:02x}{g:02x}{b:02x}".upper()
+        return f"#{a:02X}{r:02X}{g:02X}{b:02X}"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Color):
+            return NotImplemented
+        return (self.red, self.green, self.blue, self.alpha) == (
+            other.red,
+            other.green,
+            other.blue,
+            other.alpha,
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.red, self.green, self.blue, self.alpha))
+
+    def __repr__(self) -> str:
+        return f"Color({self.hex!r})"
