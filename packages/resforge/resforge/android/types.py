@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, NotRequired, TypedDict
 
-DimensionUnit = Literal["dp", "sp", "px", "pt", "mm", "in"]
+DimensionUnit = Literal["dp", "sp", "px", "pt", "mm", "in", "em"]
 
 
 @dataclass(frozen=True)
@@ -13,7 +13,7 @@ class Dimension:
         value: The numeric dimension value. Negative values are permitted
             to support negative margins/offsets, though they are
             typically ignored by padding and size attributes.
-        unit: The unit of measure (dp, sp, px, pt, mm, in).
+        unit: The unit of measure (dp, sp, px, pt, mm, in, em).
 
     """
 
@@ -51,3 +51,25 @@ px = _make_unit_func("px", "Create a dimension in pixels (px).")
 pt = _make_unit_func("pt", "Create a dimension in points (pt).")
 mm = _make_unit_func("mm", "Create a dimension in millimeters (mm).")
 inch = _make_unit_func("in", "Create a dimension in inches (in).")
+em = _make_unit_func("em", "Create a dimension using a relative font size (em).")
+
+
+class PluralValues(TypedDict):
+    """Represents the quantity-based strings for an Android plurals resource.
+
+    Attributes:
+        zero: String for quantity 0 (optional).
+        one: String for quantity 1 (optional).
+        two: String for quantity 2 (optional).
+        few: String for quantity 'few' (optional).
+        many: String for quantity 'many' (optional).
+        other: The default fallback string (required).
+
+    """
+
+    zero: NotRequired[str]
+    one: NotRequired[str]
+    two: NotRequired[str]
+    few: NotRequired[str]
+    many: NotRequired[str]
+    other: str

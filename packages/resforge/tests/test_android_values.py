@@ -146,7 +146,7 @@ class TestColor:
 
     def test_color(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
-            res.color(primary=Color.from_hex("#FF6200EE"))
+            res.color(primary=Color("#FF6200EE"))
         elem = parse(xml_path).find("color[@name='primary']")
         assert elem is not None
         assert elem.text == "#FF6200EE"

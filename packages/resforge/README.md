@@ -1,7 +1,6 @@
 # resforge
 
-A type-safe Python DSL for generating Android XML resources and Xcode Asset
-Catalogs (`.xcassets`).
+A type-safe Python DSL for generating native Android and iOS resources from design tokens.
 
 ## Installation
 
@@ -10,6 +9,32 @@ pip install resforge
 ```
 
 ## Quick Example
+
+### Android (Jetpack Compose)
+
+```python
+from resforge.android import ComposeWriter, dp
+
+with ComposeWriter("Theme.kt", "dev.kipila.example") as compose:
+    compose.dimension(border=dp(8))
+    with compose.object_("AppColors") as colors:
+        colors.color(primary="#FF0000", background="#FFFFFF")
+```
+
+```kotlin
+package dev.kipila.example
+
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+val border: Dp = 8.dp
+
+object AppColors {
+    val primary: Color = Color(0xFFFF0000)
+    val background: Color = Color(0xFFFFFFFF)
+}
+```
 
 ### Android
 
@@ -104,8 +129,10 @@ with AssetCatalog("App", "Assets") as ac:
 ## Features
 
 - Fluent, Pythonic API
+- Jetpack Compose theme generation with type-safe color and dimension properties
 - Supports all Android `res/values/` types
-- Built-in validation for Asset Catalog logic
+- Native Apple Asset Catalog (`.xcassets`) with dark mode support
+- Built-in validation for resource names and color formats
 
 ## Full Android Example
 
@@ -177,7 +204,9 @@ with ValuesWriter("res/values/resources.xml") as res:
 
 ## Roadmap
 
-- Support for more Asset Catalog types (ImageSet, IconSet)
+- SwiftUI color extension generation (`SwiftUIWriter`)
+- Asset Catalog image support (ImageSet, IconSet)
+- Android `res/drawable` vector asset support
 
 ## License
 

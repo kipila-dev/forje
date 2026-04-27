@@ -7,8 +7,7 @@ from typing import Self
 from resforge._utils import require_context
 from resforge.types import Color
 
-from .dimension import Dimension
-from .plural import PluralValues
+from .types import Dimension, PluralValues
 
 __all__ = ["ValuesWriter"]
 
@@ -48,17 +47,19 @@ class ValuesWriter:
         return self
 
     def __exit__(self, exc_type, *_) -> None:
-        self._active = False
-        if exc_type is None:
-            self._path.parent.mkdir(parents=True, exist_ok=True)
-            ET.indent(self._root, space=" " * 4, level=0)
-            tree = ET.ElementTree(self._root)
-            tree.write(
-                self._path,
-                encoding="utf-8",
-                xml_declaration=True,
-                short_empty_elements=True,
-            )
+        try:
+            if exc_type is None:
+                self._path.parent.mkdir(parents=True, exist_ok=True)
+                ET.indent(self._root, space=" " * 4, level=0)
+                tree = ET.ElementTree(self._root)
+                tree.write(
+                    self._path,
+                    encoding="utf-8",
+                    xml_declaration=True,
+                    short_empty_elements=True,
+                )
+        finally:
+            self._active = False
 
     def _sanitize(self, text: str) -> str:
         text = text.replace("'", r"\'")
@@ -143,7 +144,7 @@ class ValuesWriter:
 
         """
         for name, color in values.items():
-            resolved = Color.from_hex(color) if isinstance(color, str) else color
+            resolved = Color(color)
             self._append("color", name, resolved.hex)
         return self
 
