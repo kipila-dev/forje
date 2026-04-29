@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Self
 
-from resforge._utils import require_context
+from resforge._utils import atomic_write, require_context
 from resforge.codegen.kotlin import KotlinFile, KotlinObject
 from resforge.types import Color
 
@@ -119,7 +119,8 @@ class ComposeWriter(_BaseComposeScope):
     def __exit__(self, exc_type, *_) -> None:
         try:
             if exc_type is None:
-                self._kotlin_file.write(self._path)
+                with atomic_write(self._path) as tf:
+                    self._kotlin_file.write(tf)
         finally:
             self._active = False
 

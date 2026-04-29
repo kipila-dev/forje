@@ -4,7 +4,7 @@ from pathlib import Path
 from re import Pattern
 from typing import Self
 
-from resforge._utils import require_context
+from resforge._utils import atomic_write, require_context
 from resforge.types import Color
 
 from .types import Dimension, PluralValues
@@ -49,15 +49,15 @@ class ValuesWriter:
     def __exit__(self, exc_type, *_) -> None:
         try:
             if exc_type is None:
-                self._path.parent.mkdir(parents=True, exist_ok=True)
                 ET.indent(self._root, space=" " * 4, level=0)
                 tree = ET.ElementTree(self._root)
-                tree.write(
-                    self._path,
-                    encoding="utf-8",
-                    xml_declaration=True,
-                    short_empty_elements=True,
-                )
+                with atomic_write(self._path) as tf:
+                    tree.write(
+                        tf,
+                        encoding="utf-8",
+                        xml_declaration=True,
+                        short_empty_elements=True,
+                    )
         finally:
             self._active = False
 

@@ -4,11 +4,13 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Self
 
+from resforge._utils import atomic_write
+
 
 def write_contents(path: str | Path, contents: dict[str, Any]) -> None:
     path = Path(path) / "Contents.json"
-    with path.open("w") as f:
-        json.dump(contents, f, indent=2)
+    with atomic_write(path) as tf:
+        tf.write(json.dumps(contents, indent=2).encode())
 
 
 class AssetNode(ABC):

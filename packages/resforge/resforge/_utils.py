@@ -1,6 +1,10 @@
-from collections.abc import Callable
+import os
+from collections.abc import Callable, Generator
+from contextlib import contextmanager, suppress
 from functools import wraps
-from typing import Concatenate
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import IO, Concatenate
 
 
 def require_context[T, **P, R](
@@ -22,3 +26,37 @@ def require_context[T, **P, R](
         return func(self, *args, **kwargs)
 
     return wrapper
+
+
+@contextmanager
+def atomic_write(target_path: Path) -> Generator[IO[bytes], None, None]:
+    """Yields a temporary file, then atomically replaces target_path on success."""
+    target_path = Path(target_path)
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+
+    temp_path = None
+    try:
+        with NamedTemporaryFile(
+            dir=target_path.parent, delete=False, suffix=".tmp"
+        ) as tf:
+            temp_path = Path(tf.name)
+            yield tf
+
+            tf.flush()
+            os.fsync(tf.fileno())
+
+        temp_path.replace(target_path)
+
+        if os.name == "posix":
+            flags = os.O_RDONLY
+            if hasattr(os, "O_DIRECTORY"):
+                flags |= os.O_DIRECTORY
+            dir_fd = os.open(target_path.parent, flags)
+            try:
+                os.fsync(dir_fd)
+            finally:
+                os.close(dir_fd)
+    finally:
+        if temp_path and temp_path.exists():
+            with suppress(OSError):
+                temp_path.unlink()
