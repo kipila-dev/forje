@@ -36,7 +36,7 @@ dev = ["pytest", "defusedxml"]
 
 [project.urls]
 Homepage = "https://kipila.dev"
-Repository = "https://github.com/ok100/resforge"
+Repository = "https://github.com/kipila-dev/resforge"
 
 [tool.ruff]
 target-version = "py312"
