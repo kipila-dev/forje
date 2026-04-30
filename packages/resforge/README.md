@@ -136,7 +136,6 @@ with AssetCatalog("App", "Assets") as ac:
 
 ## Roadmap
 
-- SwiftUI color extension generation (`SwiftUIWriter`)
 - Asset Catalog image support (ImageSet, IconSet)
 - Android `res/drawable` vector asset support
 
