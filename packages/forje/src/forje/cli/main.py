@@ -1,18 +1,29 @@
+import time
+from pathlib import Path
 from typing import Annotated
 
 import typer
 
+import forje.core.runner
 from forje import __version__
+from forje.cli.output import error, success
+from forje.cli.utils import format_elapsed
+from forje.errors import ForjeEvalError, ForjeParseError
 
 app = typer.Typer(
     name="forje",
-    help="The build system for your design system.",
+    help="Build design system resources from Starlark definitions.",
     no_args_is_help=True,
     add_completion=False,
 )
 
 
-def version_callback(value: bool):
+def _find_build_file() -> Path | None:
+    candidate = Path.cwd() / "build.forje"
+    return candidate if candidate.exists() else None
+
+
+def _version_callback(value: bool):
     if value:
         typer.echo(f"forje {__version__}")
         raise typer.Exit()
@@ -24,7 +35,7 @@ def main(
         bool | None,
         typer.Option(
             "--version",
-            callback=version_callback,
+            callback=_version_callback,
             is_eager=True,
             help="Show version and exit.",
         ),
@@ -34,17 +45,30 @@ def main(
 
 
 @app.command()
-def build(
-    target: Annotated[
-        list[str] | None,
-        typer.Argument(help="Targets to build. Builds all if omitted."),
-    ] = None,
-):
+def build():
     """Build design system resources."""
-    if target:
-        typer.echo(f"Building target: {target}...")
-    else:
-        typer.echo("Building all targets...")
+    build_file = _find_build_file()
+
+    if build_file is None:
+        error("build.forje not found in current directory.")
+        raise typer.Exit(code=1)
+
+    try:
+        source = build_file.read_text(encoding="utf-8")
+    except OSError as e:
+        error(f"Could not read build.forje: {e.strerror}")
+        raise typer.Exit(code=1)
+
+    start = time.perf_counter()
+
+    try:
+        forje.core.runner.run_build(source)
+    except (ForjeParseError, ForjeEvalError) as e:
+        error(str(e))
+        raise typer.Exit(code=1)
+
+    elapsed = time.perf_counter() - start
+    success(f"Build succeeded in {format_elapsed(elapsed)}")
 
 
 @app.command()
