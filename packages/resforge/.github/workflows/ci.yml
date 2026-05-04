@@ -16,35 +16,33 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
 
-      - name: Install dependencies
-        run: |
-          pip install -e ".[dev]"
+      - name: Install Hatch
+        run: pip install hatch
 
       - name: Run tests
-        run: pytest tests/ -v
+        run: hatch run pytest
 
-  lint-package:
+  lint-and-check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
 
-      - name: Install build tools
-        run: pip install build twine
+      - name: Install Hatch
+        run: pip install hatch
 
-      - name: Build distribution
-        run: python -m build
+      - name: Lint
+        run: hatch run ruff check .
 
-      - name: Verify package metadata
-        run: twine check dist/*
+      - name: Type check
+        run: hatch run basedpyright
+
+      - name: Verify Build Metadata
+        run: hatch build
