@@ -7,13 +7,24 @@ name = "forje"
 dynamic = ["version"]
 description = "The build system for your design system"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Ondrej Kipila", email = "ondrej@kipila.dev" }]
-dependencies = ["resforge", "coloraide", "starlark-pyo3", "typer"]
+dependencies = ["resforge", "coloraide", "starlark-pyo3", "typer", "flatten-dict"]
 
 [tool.hatch.version]
 path = "src/forje/__init__.py"
 
 [project.scripts]
 forje = "forje.cli.main:app"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D100", "D104", "D105", "ANN401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.basedpyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.12"

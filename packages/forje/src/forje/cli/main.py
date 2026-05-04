@@ -12,7 +12,6 @@ from forje.errors import ForjeEvalError, ForjeParseError
 
 app = typer.Typer(
     name="forje",
-    help="Build design system resources from Starlark definitions.",
     no_args_is_help=True,
     add_completion=False,
 )
@@ -23,10 +22,10 @@ def _find_build_file() -> Path | None:
     return candidate if candidate.exists() else None
 
 
-def _version_callback(value: bool):
+def _version_callback(*, value: bool) -> None:
     if value:
         typer.echo(f"forje {__version__}")
-        raise typer.Exit()
+        raise typer.Exit
 
 
 @app.callback()
@@ -40,12 +39,12 @@ def main(
             help="Show version and exit.",
         ),
     ] = None,
-):
-    pass
+) -> None:
+    """Build design system resources from Starlark definitions."""
 
 
 @app.command()
-def build():
+def build() -> None:
     """Build design system resources."""
     build_file = _find_build_file()
 
@@ -57,7 +56,7 @@ def build():
         source = build_file.read_text(encoding="utf-8")
     except OSError as e:
         error(f"Could not read build.forje: {e.strerror}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     start = time.perf_counter()
 
@@ -65,14 +64,14 @@ def build():
         forje.core.runner.run_build(source)
     except (ForjeParseError, ForjeEvalError) as e:
         error(str(e))
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from None
 
     elapsed = time.perf_counter() - start
     success(f"Build succeeded in {format_elapsed(elapsed)}")
 
 
 @app.command()
-def validate():
+def validate() -> None:
     """Validate build.forje without executing the build."""
     typer.echo("Validating...")
 
