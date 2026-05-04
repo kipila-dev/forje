@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import inspect
+from contextvars import ContextVar, Token
 from functools import partial
 from pkgutil import iter_modules
 from typing import TYPE_CHECKING, Any, ClassVar
@@ -16,22 +17,22 @@ if TYPE_CHECKING:
 
 __all__ = ["ForjeModule", "load_core", "load_extensions"]
 
+_ir_var: ContextVar[IR] = ContextVar("ir_var")
+
 
 class _IRProxy:
-    def __init__(self) -> None:
-        self.__dict__["_real_ir"] = None
-
-    def set_target(self, ir: IR) -> None:
-        self.__dict__["_real_ir"] = ir
-
     def __getattr__(self, name: str) -> Any:
-        if self._real_ir is None:
-            msg = "Attempted to access IR attribute before it was built."
-            raise RuntimeError(msg)
-        return getattr(self._real_ir, name)
+        try:
+            return getattr(_ir_var.get(), name)
+        except LookupError:
+            msg = "No IR context active."
+            raise RuntimeError(msg) from LookupError
 
     def __repr__(self) -> str:
-        return repr(self._real_ir) if self._real_ir else "<Empty IR Proxy>"
+        try:
+            return repr(_ir_var.get())
+        except LookupError:
+            return "<Empty IR Proxy>"
 
 
 class ForjeModule:
@@ -55,8 +56,14 @@ class ForjeModule:
         self.env[name] = value
 
     @classmethod
-    def register_context(cls, ctx: IR) -> None:
-        cls._ir.set_target(ctx)
+    def set_context(cls, ctx: IR) -> Token[IR]:
+        """Sets the IR for the current execution context."""
+        return _ir_var.set(ctx)
+
+    @classmethod
+    def reset_context(cls, token: Token[IR]) -> None:
+        """Resets the context to the state before set_context was called."""
+        _ir_var.reset(token)
 
 
 def load_core() -> None:

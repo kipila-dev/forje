@@ -8,6 +8,9 @@ from forje.errors import ForjeEvalError, ForjeParseError
 
 __all__ = ["run_build"]
 
+load_core()
+load_extensions()
+
 
 def _build_module(
     module: ForjeModule,
@@ -43,29 +46,27 @@ def _build_dsl(
 
 
 def run_build(source: str) -> IR:
-    ForjeModule.register.clear()
-
-    load_core()
-    load_extensions()
-
     ctx = IR()
-    ForjeModule.register_context(ctx)
-
-    module = starlark.Module()
-    loader = _build_dsl(default_module=module)
-
-    globals_ = starlark.Globals.standard().extended_by(
-        [starlark.LibraryExtension.Print, starlark.LibraryExtension.StructType],
-    )
+    token = ForjeModule.set_context(ctx)
 
     try:
-        ast = starlark.parse("build.forje", source)
-    except starlark.StarlarkError as e:
-        raise ForjeParseError(str(e)) from e
+        module = starlark.Module()
+        loader = _build_dsl(default_module=module)
 
-    try:
-        _ = starlark.eval(module, ast, globals_, starlark.FileLoader(loader))
-    except starlark.StarlarkError as e:
-        raise ForjeEvalError(str(e)) from e
+        globals_ = starlark.Globals.standard().extended_by(
+            [starlark.LibraryExtension.Print, starlark.LibraryExtension.StructType],
+        )
 
-    return ctx
+        try:
+            ast = starlark.parse("build.forje", source)
+        except starlark.StarlarkError as e:
+            raise ForjeParseError(str(e)) from e
+
+        try:
+            _ = starlark.eval(module, ast, globals_, starlark.FileLoader(loader))
+        except starlark.StarlarkError as e:
+            raise ForjeEvalError(str(e)) from e
+
+        return ctx
+    finally:
+        ForjeModule.reset_context(token)
