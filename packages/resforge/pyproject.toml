@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "resforge"
-version = "0.3.1"
+dynamic = ["version"]
 description = "A type-safe Python DSL for cross-platform mobile resource generation"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -31,8 +31,16 @@ classifiers = [
   "Topic :: Software Development :: Build Tools",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "defusedxml"]
+[tool.hatch.version]
+path = "src/resforge/__init__.py"
+
+[tool.hatch.envs.default]
+extra-dependencies = [
+  "pytest",
+  "defusedxml",
+  "ruff",
+  "basedpyright",
+]
 
 [project.urls]
 Homepage = "https://kipila.dev"
@@ -84,6 +92,4 @@ fixable = ["ALL"]
 ]
 
 [tool.basedpyright]
-venvPath = "."
-venv = ".venv"
 typeCheckingMode = "standard"
