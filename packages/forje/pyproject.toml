@@ -20,7 +20,7 @@ forje = "forje.cli.main:app"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D100", "D104", "D105", "ANN401"]
+ignore = ["D100", "D104", "D105", "ANN401", "PLR2004"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

@@ -1,25 +1,12 @@
-import importlib.metadata
 from collections.abc import Callable
-from pkgutil import iter_modules
 
 import starlark
 
-import forje.dsl.core
 from forje.core import IR
-from forje.dsl import ForjeModule
+from forje.dsl import ForjeModule, load_core, load_extensions
 from forje.errors import ForjeEvalError, ForjeParseError
 
-
-def _load_core() -> None:
-    for _, name, _ in iter_modules(forje.dsl.core.__path__):
-        full_name = f"forje.dsl.core.{name}"
-        importlib.import_module(full_name)
-
-
-def _load_extensions() -> None:
-    entries = importlib.metadata.entry_points(group="forje.dsl.extensions")
-    for entry in entries:
-        entry.load()
+__all__ = ["run_build"]
 
 
 def _build_module(
@@ -35,7 +22,7 @@ def _build_module(
     return mod.freeze() if into is None else mod
 
 
-def _load_dsl(
+def _build_dsl(
     default_module: starlark.Module,
 ) -> Callable[..., starlark.FrozenModule]:
     modules: dict[str, starlark.FrozenModule] = {}
@@ -58,14 +45,14 @@ def _load_dsl(
 def run_build(source: str) -> IR:
     ForjeModule.register.clear()
 
-    _load_core()
-    _load_extensions()
+    load_core()
+    load_extensions()
 
     ctx = IR()
     ForjeModule.register_context(ctx)
 
     module = starlark.Module()
-    loader = _load_dsl(default_module=module)
+    loader = _build_dsl(default_module=module)
 
     globals_ = starlark.Globals.standard().extended_by(
         [starlark.LibraryExtension.Print, starlark.LibraryExtension.StructType],

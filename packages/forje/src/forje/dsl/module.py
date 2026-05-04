@@ -1,13 +1,20 @@
 from __future__ import annotations
 
+import importlib.metadata
 import inspect
 from functools import partial
+from pkgutil import iter_modules
 from typing import TYPE_CHECKING, Any, ClassVar
+
+import forje.dsl.core
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from forje.core.ir import IR
+
+
+__all__ = ["ForjeModule", "load_core", "load_extensions"]
 
 
 class _IRProxy:
@@ -50,3 +57,15 @@ class ForjeModule:
     @classmethod
     def register_context(cls, ctx: IR) -> None:
         cls._ir.set_target(ctx)
+
+
+def load_core() -> None:
+    for _, name, _ in iter_modules(forje.dsl.core.__path__):
+        full_name = f"forje.dsl.core.{name}"
+        importlib.import_module(full_name)
+
+
+def load_extensions() -> None:
+    entries = importlib.metadata.entry_points(group="forje.dsl.extensions")
+    for entry in entries:
+        entry.load()
