@@ -5,7 +5,7 @@ import inspect
 from contextvars import ContextVar, Token
 from functools import partial
 from pkgutil import iter_modules
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, final, override
 
 import forje.dsl.core
 
@@ -21,13 +21,14 @@ _ir_var: ContextVar[IR] = ContextVar("ir_var")
 
 
 class _IRProxy:
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str) -> object:
         try:
-            return getattr(_ir_var.get(), name)
+            return getattr(_ir_var.get(), name)  # pyright: ignore[reportAny]
         except LookupError:
             msg = "No IR context active."
             raise RuntimeError(msg) from LookupError
 
+    @override
     def __repr__(self) -> str:
         try:
             return repr(_ir_var.get())
@@ -35,16 +36,30 @@ class _IRProxy:
             return "<Empty IR Proxy>"
 
 
+@final
 class ForjeModule:
+    """Manages exporting of Python functions to the DSL."""
+
     _ir = _IRProxy()
-    register: ClassVar[list[ForjeModule]] = []
+    registry: ClassVar[list[ForjeModule]] = []
 
     def __init__(self, name: str | None) -> None:
+        """Initialize a new module.
+
+        Args:
+            name: Starlark module name. If omitted, the exports will be injected
+                into the default Starlark module.
+        """
         self.name = name
-        self.env: dict[str, Callable[..., Any] | Any] = {}
-        ForjeModule.register.append(self)
+        self.env: dict[str, Callable[..., object] | object] = {}
+        ForjeModule.registry.append(self)
 
     def export[F: Callable[..., Any]](self, fun: F) -> F:
+        """Decorates a function to be exported to the DSL.
+
+        If the function signature contains a 'ctx' parameter, it is automatically
+        partially applied with the IR context proxy.
+        """
         sig = inspect.signature(fun)
         if "ctx" in sig.parameters:
             self.env[fun.__name__] = partial(fun, ForjeModule._ir)
@@ -53,6 +68,7 @@ class ForjeModule:
         return fun
 
     def export_value(self, name: str, value: object) -> None:
+        """Exports a static value to the DSL."""
         self.env[name] = value
 
     @classmethod
@@ -67,12 +83,17 @@ class ForjeModule:
 
 
 def load_core() -> None:
+    """Imports all submodules from the core DSL package.
+
+    This triggers the execution of @module.export decorators within the core library.
+    """
     for _, name, _ in iter_modules(forje.dsl.core.__path__):
         full_name = f"forje.dsl.core.{name}"
-        importlib.import_module(full_name)
+        _ = importlib.import_module(full_name)
 
 
 def load_extensions() -> None:
+    """Loads external DSL extensions."""
     entries = importlib.metadata.entry_points(group="forje.dsl.extensions")
     for entry in entries:
         entry.load()

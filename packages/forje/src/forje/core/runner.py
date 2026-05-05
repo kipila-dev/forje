@@ -8,6 +8,20 @@ from forje.errors import ForjeEvalError, ForjeParseError
 
 __all__ = ["run_build"]
 
+_STARLARK_EXTENSIONS = [
+    starlark.LibraryExtension.EnumType,
+    starlark.LibraryExtension.Filter,
+    starlark.LibraryExtension.Json,
+    starlark.LibraryExtension.Map,
+    starlark.LibraryExtension.Partial,
+    starlark.LibraryExtension.Pprint,
+    starlark.LibraryExtension.Print,
+    starlark.LibraryExtension.RecordType,
+    starlark.LibraryExtension.RustDecimal,
+    starlark.LibraryExtension.StructType,
+    starlark.LibraryExtension.Typing,
+]
+
 load_core()
 load_extensions()
 
@@ -29,9 +43,9 @@ def _build_dsl(
     default_module: starlark.Module,
 ) -> Callable[..., starlark.FrozenModule]:
     modules: dict[str, starlark.FrozenModule] = {}
-    for module in ForjeModule.register:
+    for module in ForjeModule.registry:
         if module.name is None:
-            _build_module(module, into=default_module)
+            _ = _build_module(module, into=default_module)
         else:
             mod = _build_module(module)
             if isinstance(mod, starlark.FrozenModule):
@@ -46,6 +60,15 @@ def _build_dsl(
 
 
 def run_build(source: str) -> IR:
+    """Evaluate a Forje build script.
+
+    Args:
+        source: The contents of a build.forje file as a string.
+
+    Raises:
+        ForjeParseError: If the source contains a Starlark syntax error.
+        ForjeEvalError: If the source fails during Starlark evaluation.
+    """
     ctx = IR()
     token = ForjeModule.set_context(ctx)
 
@@ -53,9 +76,7 @@ def run_build(source: str) -> IR:
         module = starlark.Module()
         loader = _build_dsl(default_module=module)
 
-        globals_ = starlark.Globals.standard().extended_by(
-            [starlark.LibraryExtension.Print, starlark.LibraryExtension.StructType],
-        )
+        globals_ = starlark.Globals.standard().extended_by(_STARLARK_EXTENSIONS)
 
         try:
             ast = starlark.parse("build.forje", source)
@@ -66,7 +87,7 @@ def run_build(source: str) -> IR:
             _ = starlark.eval(module, ast, globals_, starlark.FileLoader(loader))
         except starlark.StarlarkError as e:
             raise ForjeEvalError(str(e)) from e
-
-        return ctx
     finally:
         ForjeModule.reset_context(token)
+
+    return ctx
