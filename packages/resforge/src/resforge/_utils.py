@@ -1,4 +1,5 @@
 import os
+import shutil
 from collections.abc import Callable, Generator
 from contextlib import contextmanager, suppress
 from functools import wraps
@@ -30,7 +31,10 @@ def require_context[T, **P, R](
 
 @contextmanager
 def atomic_write(target_path: Path) -> Generator[IO[bytes], None, None]:
-    """Yields a temporary file, then atomically replaces target_path on success."""
+    """Yields a temporary file, then atomically replaces target_path on success.
+
+    Preserves file permissions of target_path, if target_path already exists.
+    """
     target_path = Path(target_path)
     target_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -44,6 +48,13 @@ def atomic_write(target_path: Path) -> Generator[IO[bytes], None, None]:
 
             tf.flush()
             os.fsync(tf.fileno())
+
+        try:
+            shutil.copymode(target_path, temp_path)
+        except OSError:
+            mask = os.umask(0)
+            os.umask(mask)
+            temp_path.chmod(0o666 & ~mask)
 
         temp_path.replace(target_path)
 
