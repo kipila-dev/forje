@@ -26,6 +26,14 @@ class _BaseComposeScope:
     def __init__(self, ctx: _ComposeContext, target: KotlinFile | KotlinObject) -> None:
         self._ctx = ctx
         self._target = target
+        self._active = False
+
+    def __enter__(self) -> Self:
+        self._active = True
+        return self
+
+    def __exit__(self, exc_type, *_) -> None:
+        self._active = False
 
     @staticmethod
     def _to_compose_color_literal(color: Color) -> str:
@@ -76,12 +84,7 @@ class _BaseComposeScope:
 
 
 class _ObjectScope(_BaseComposeScope):
-    def __enter__(self) -> Self:
-        self._active = True
-        return self
-
-    def __exit__(self, *_) -> None:
-        self._active = False
+    pass
 
 
 class ComposeWriter(_BaseComposeScope):
@@ -108,11 +111,12 @@ class ComposeWriter(_BaseComposeScope):
         self._active = False
 
     def __enter__(self) -> Self:
-        self._active = True
         self._kotlin_file = KotlinFile(package=self._package)
 
         ctx = _ComposeContext(self._kotlin_file)
         super().__init__(ctx, self._kotlin_file)
+
+        self._active = True
 
         return self
 
