@@ -1,88 +1,98 @@
 from __future__ import annotations
 
 import importlib.metadata
+import importlib.resources
 import inspect
-from contextvars import ContextVar, Token
 from functools import partial
 from pkgutil import iter_modules
-from typing import TYPE_CHECKING, Any, ClassVar, final, override
+from typing import TYPE_CHECKING, Any, ClassVar, Self, final, overload
 
 import forje.dsl.core
+from forje.core.context import ContextProxy
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from forje.core.ir import IR
-
-
-__all__ = ["ForjeModule", "load_core", "load_extensions"]
-
-_ir_var: ContextVar[IR] = ContextVar("ir_var")
-
-
-class _IRProxy:
-    def __getattr__(self, name: str) -> object:
-        try:
-            return getattr(_ir_var.get(), name)  # pyright: ignore[reportAny]
-        except LookupError:
-            msg = "No IR context active."
-            raise RuntimeError(msg) from LookupError
-
-    @override
-    def __repr__(self) -> str:
-        try:
-            return repr(_ir_var.get())
-        except LookupError:
-            return "<Empty IR Proxy>"
+__all__ = ["Module", "load_dsl_core", "load_dsl_extensions"]
 
 
 @final
-class ForjeModule:
+class Module:
     """Manages exporting of Python functions to the DSL."""
 
-    _ir = _IRProxy()
-    registry: ClassVar[list[ForjeModule]] = []
+    _ctx = ContextProxy()
+    registry: ClassVar[list[Module]] = []
 
     def __init__(self, name: str | None) -> None:
-        """Initialize a new module.
+        """Initialize a new DSL module.
 
         Args:
             name: Starlark module name. If omitted, the exports will be injected
                 into the default Starlark module.
         """
         self.name = name
-        self.env: dict[str, Callable[..., object] | object] = {}
-        ForjeModule.registry.append(self)
+        self.python_env: dict[str, Callable[..., object] | object] = {}
+        self.starlark_env: str | None = None
+        Module.registry.append(self)
 
-    def export[F: Callable[..., Any]](self, fun: F) -> F:
+    @overload
+    def export[F: Callable[..., Any]](
+        self,
+        fun: F,
+        *,
+        name: str | None = None,
+    ) -> F: ...
+
+    @overload
+    def export[F: Callable[..., Any]](
+        self,
+        fun: None = None,
+        *,
+        name: str | None = None,
+    ) -> Callable[[F], F]: ...
+
+    def export[F: Callable[..., Any]](
+        self,
+        fun: F | None = None,
+        *,
+        name: str | None = None,
+    ) -> F | Callable[[F], F]:
         """Decorates a function to be exported to the DSL.
 
         If the function signature contains a 'ctx' parameter, it is automatically
-        partially applied with the IR context proxy.
+        partially applied.
+
+        Supports:
+            @module.export
+            @module.export(name="custom_name")
         """
+        if fun is None:
+            return partial(self.export, name=name)
+
+        resolved_name = (name if name and name.strip() else fun.__name__).strip()
         sig = inspect.signature(fun)
         if "ctx" in sig.parameters:
-            self.env[fun.__name__] = partial(fun, ForjeModule._ir)
+            self.python_env[resolved_name] = partial(fun, Module._ctx)
         else:
-            self.env[fun.__name__] = fun
+            self.python_env[resolved_name] = fun
         return fun
 
-    def export_value(self, name: str, value: object) -> None:
+    def export_value(self, name: str, value: object) -> Self:
         """Exports a static value to the DSL."""
-        self.env[name] = value
+        self.python_env[name] = value
+        return self
 
-    @classmethod
-    def set_context(cls, ctx: IR) -> Token[IR]:
-        """Sets the IR for the current execution context."""
-        return _ir_var.set(ctx)
+    def export_starlark(self, package: str, resource_name: str) -> Self:
+        """Exports Starlark definitions to the DSL."""
+        self.starlark_env = (
+            importlib.resources.files(package)
+            .joinpath(resource_name)
+            .read_text("utf-8")
+        )
+        return self
 
-    @classmethod
-    def reset_context(cls, token: Token[IR]) -> None:
-        """Resets the context to the state before set_context was called."""
-        _ir_var.reset(token)
 
-
-def load_core() -> None:
+def load_dsl_core() -> None:
     """Imports all submodules from the core DSL package.
 
     This triggers the execution of @module.export decorators within the core library.
@@ -92,7 +102,7 @@ def load_core() -> None:
         _ = importlib.import_module(full_name)
 
 
-def load_extensions() -> None:
+def load_dsl_extensions() -> None:
     """Loads external DSL extensions."""
     entries = importlib.metadata.entry_points(group="forje.dsl.extensions")
     for entry in entries:

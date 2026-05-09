@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
+from rich import print
 
-import forje.core.runner
+import forje.core.build
 from forje import __version__
 from forje.cli.output import error, success
 from forje.cli.utils import format_elapsed
@@ -61,7 +62,8 @@ def build() -> None:
     start = time.perf_counter()
 
     try:
-        forje.core.runner.run_build(source)
+        ir = forje.core.build.run_build(source)
+        print(ir)
     except (ForjeParseError, ForjeEvalError) as e:
         error(str(e))
         raise typer.Exit(code=1) from None
