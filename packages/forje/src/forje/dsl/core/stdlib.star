@@ -20,18 +20,32 @@ TokenKind = struct(
 ColorType = record(coords = list[float], alpha = float, space = _ColorSpace)
 TokenType = record(name = str, kind = _TokenKind, mapping = dict[_Mapping, typing.Any])
 
-def Color(value, space = ColorSpace.SRGB):
+def Color(value, alpha = None, space = ColorSpace.SRGB):
     if not isinstance(space, _ColorSpace):
         fail("Invalid argument for 'space': expected a ColorSpace enum")
 
     if space == ColorSpace.SRGB:
         r, g, b, a = _sys_color_parse_hex(value)
-        return ColorType(coords = [r, g, b], alpha = a, space = space)
+        return ColorType(
+            coords = [r, g, b],
+            alpha = alpha if alpha != None else a,
+            space = space,
+        )
 
     if space == ColorSpace.P3:
-        pass  # TODO
+        if (
+            not isinstance(value, list[float]) or
+            len(value) != 3 or
+            min(value) < 0 or max(value) > 1
+        ):
+            fail("Invalid argument for 'value': expected a [float, float, float] list")
+        return ColorType(
+            coords = value,
+            alpha = alpha if alpha != None else 1.0,
+            space = space,
+        )
 
-    fail("Not implemented")
+    fail("Unsupported color space: '{}'.".format(space.value))
 
 def Token(name, value = None, **mapping):
     if isinstance(value, ColorType):
