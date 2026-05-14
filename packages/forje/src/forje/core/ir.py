@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class ValueIR:
-    value: str
+    value: object
     origin: dict[str, object] = field(default_factory=dict)
 
 

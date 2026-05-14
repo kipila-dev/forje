@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from contextvars import ContextVar, Token
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, override
+from dataclasses import dataclass, field
+from threading import Lock
+from typing import TYPE_CHECKING, final, override
 
 if TYPE_CHECKING:
     from forje.core.ir import IR
@@ -12,9 +13,11 @@ __all__ = ["Context", "ContextProxy"]
 _ctx: ContextVar[Context] = ContextVar("ctx")
 
 
+@final
 @dataclass
 class Context:
     ir: IR
+    lock: Lock = field(init=False, default_factory=Lock)
 
 
 class ContextProxy:

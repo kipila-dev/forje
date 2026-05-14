@@ -8,3 +8,7 @@ class ForjeParseError(ForjeError):
 
 class ForjeEvalError(ForjeError):
     """Starlark evaluation error in build.forje."""
+
+
+class ForjeValidationError(ForjeError):
+    """Domain constraint violation."""
