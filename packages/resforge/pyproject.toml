@@ -9,7 +9,7 @@ description = "A type-safe Python DSL for cross-platform mobile resource generat
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "Ondrej Kipila", email = "ondrej@kipila.dev" }]
+authors = [{ name = "Kipila Ltd", email = "hello@kipila.dev" }]
 keywords = [
   "dsl",
   "design-tokens",
