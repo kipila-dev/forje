@@ -2,6 +2,10 @@ class ForjeError(Exception):
     """Base class for all Forje errors."""
 
 
+class ForjePluginLoadError(ForjeError):
+    """Error while loading external plugin."""
+
+
 class ForjeParseError(ForjeError):
     """Starlark parse error in build.forje."""
 

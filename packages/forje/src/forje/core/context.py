@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, final, override
 if TYPE_CHECKING:
     from forje.core.ir import IR
 
-__all__ = ["Context", "ContextProxy"]
+__all__ = ["Context", "context_proxy"]
 
 _ctx: ContextVar[Context] = ContextVar("ctx")
 
@@ -20,7 +20,7 @@ class Context:
     lock: Lock = field(init=False, default_factory=Lock)
 
 
-class ContextProxy:
+class _ContextProxy:
     def __getattr__(self, name: str) -> object:
         try:
             return getattr(_ctx.get(), name)  # pyright: ignore[reportAny]
@@ -44,3 +44,6 @@ class ContextProxy:
     def reset_context(cls, token: Token[Context]) -> None:
         """Resets the context to the state before set_context was called."""
         _ctx.reset(token)
+
+
+context_proxy = _ContextProxy()

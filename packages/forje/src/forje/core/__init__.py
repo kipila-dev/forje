@@ -1,4 +1,3 @@
-from forje.dsl.module import load_dsl_core, load_dsl_extensions
+from .context import Context
 
-load_dsl_core()
-load_dsl_extensions()
+__all__ = ["Context"]

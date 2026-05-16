@@ -2,7 +2,7 @@ import re
 
 from forje.core.context import Context
 from forje.core.ir import TargetIR, TokenIR, ValueIR
-from forje.dsl.module import Module
+from forje.dsl import Module
 from forje.errors import ForjeValidationError
 
 __all__ = ["stdlib"]

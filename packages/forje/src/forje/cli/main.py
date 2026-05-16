@@ -1,15 +1,25 @@
+import logging
 import time
 from pathlib import Path
 from typing import Annotated
 
 import typer
 from rich import print
+from rich.logging import RichHandler
 
 import forje.core.build
 from forje import __version__
 from forje.cli.output import error, success
 from forje.cli.utils import format_elapsed
-from forje.errors import ForjeEvalError, ForjeParseError
+from forje.core.environment import BuildEnvironment
+from forje.errors import ForjeEvalError, ForjeParseError, ForjePluginLoadError
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s",
+    datefmt="[%X]",
+    handlers=[RichHandler(rich_tracebacks=True)],
+)
 
 app = typer.Typer(
     name="forje",
@@ -25,7 +35,7 @@ def _find_build_file() -> Path | None:
 
 def _version_callback(*, value: bool) -> None:
     if value:
-        typer.echo(f"forje {__version__}")
+        print(f"forje {__version__}")
         raise typer.Exit
 
 
@@ -57,25 +67,20 @@ def build() -> None:
         source = build_file.read_text(encoding="utf-8")
     except OSError as e:
         error(f"Could not read build.forje: {e.strerror}")
-        raise typer.Exit(code=1) from None
+        raise typer.Exit(code=1) from e
 
     start = time.perf_counter()
 
     try:
-        ir = forje.core.build.run_build(source)
+        env = BuildEnvironment().load_plugins()
+        ir = forje.core.build.run_build(env, source)
         print(ir)
-    except (ForjeParseError, ForjeEvalError) as e:
+    except (ForjePluginLoadError, ForjeParseError, ForjeEvalError) as e:
         error(str(e))
-        raise typer.Exit(code=1) from None
+        raise typer.Exit(code=1) from e
 
     elapsed = time.perf_counter() - start
     success(f"Build succeeded in {format_elapsed(elapsed)}")
-
-
-@app.command()
-def validate() -> None:
-    """Validate build.forje without executing the build."""
-    typer.echo("Validating...")
 
 
 if __name__ == "__main__":
