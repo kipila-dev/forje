@@ -9,7 +9,7 @@ description = "The build system for your design system"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "Ondrej Kipila", email = "ondrej@kipila.dev" }]
+authors = [{ name = "Kipila Ltd", email = "hello@kipila.dev" }]
 dependencies = ["resforge", "coloraide", "starlark-pyo3", "typer"]
 
 [tool.hatch.version]
