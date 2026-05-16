@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Kipila Ltd", email = "hello@kipila.dev" }]
-dependencies = ["resforge", "coloraide", "starlark-pyo3", "typer"]
+dependencies = ["resforge", "starlark-pyo3", "typer"]
 
 [tool.hatch.version]
 path = "src/forje/__init__.py"
