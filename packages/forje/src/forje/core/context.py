@@ -6,7 +6,7 @@ from threading import Lock
 from typing import TYPE_CHECKING, final, override
 
 if TYPE_CHECKING:
-    from forje.core.ir import IR
+    from forje.ir import IR
 
 __all__ = ["Context", "context_proxy"]
 

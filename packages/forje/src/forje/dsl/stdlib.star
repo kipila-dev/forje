@@ -17,8 +17,16 @@ TokenKind = struct(
     Color = _TokenKind("color"),
 )
 
+_ArtifactFormat = enum("android", "apple", "compose")
+ArtifactFormat = struct(
+    Android = _ArtifactFormat("android"),
+    Apple = _ArtifactFormat("apple"),
+    Compose = _ArtifactFormat("compose"),
+)
+
 ColorType = record(coords = list[float], alpha = float, space = _ColorSpace)
 TokenType = record(name = str, kind = _TokenKind, mapping = dict[_Mapping, typing.Any])
+ArtifactType = record(format = _ArtifactFormat, path = str)
 
 def Color(value, alpha = None, space = ColorSpace.SRGB):
     if not isinstance(space, _ColorSpace):
@@ -80,7 +88,12 @@ def Token(name, value = None, **mapping):
 
     fail("Invalid token value: {}".format(value))
 
+def Artifact(format, path):
+    return ArtifactType(format = format, path = path)
+
 def target(id, tokens, artifacts):
     _sys_create_target(id)
     for token in tokens:
         _sys_target_add_token(id, token.name, token.kind, token.mapping)
+    for artifact in artifacts:
+        _sys_target_add_artifact(id, artifact.format, artifact.path)

@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 import starlark
 
 from forje.core.context import Context, context_proxy
-from forje.core.ir import IR
 from forje.errors import ForjeEvalError, ForjeParseError
+from forje.ir import IR
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from forje.core.environment import BuildEnvironment
+    from forje.core.environment import Environment
     from forje.dsl.module import Module
 
 __all__ = ["run_build"]
@@ -52,7 +52,7 @@ def _build_module(
 
 
 def _build_dsl(
-    env: BuildEnvironment,
+    env: Environment,
 ) -> tuple[starlark.Module, Callable[..., starlark.FrozenModule]]:
 
     modules: dict[str, starlark.FrozenModule] = {}
@@ -91,7 +91,7 @@ def _parse_and_eval(
         raise ForjeEvalError(str(e)) from e
 
 
-def run_build(env: BuildEnvironment, source: str) -> IR:
+def run_build(env: Environment, source: str) -> IR:
     """Evaluate a Forje build script.
 
     Args:

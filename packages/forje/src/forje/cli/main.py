@@ -7,11 +7,11 @@ import typer
 from rich import print
 from rich.logging import RichHandler
 
-import forje.core.build
+import forje.core.compiler
 from forje import __version__
-from forje.cli.output import error, success
+from forje.cli.ui import error, success
 from forje.cli.utils import format_elapsed
-from forje.core.environment import BuildEnvironment
+from forje.core.environment import Environment
 from forje.errors import ForjeEvalError, ForjeParseError, ForjePluginLoadError
 
 logging.basicConfig(
@@ -72,8 +72,8 @@ def build() -> None:
     start = time.perf_counter()
 
     try:
-        env = BuildEnvironment().load_plugins()
-        ir = forje.core.build.run_build(env, source)
+        env = Environment().load_plugins()
+        ir = forje.core.compiler.run_build(env, source)
         print(ir)
     except (ForjePluginLoadError, ForjeParseError, ForjeEvalError) as e:
         error(str(e))

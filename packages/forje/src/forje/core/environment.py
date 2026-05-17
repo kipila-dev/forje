@@ -6,7 +6,7 @@ from forje.dsl.stdlib import stdlib
 from forje.errors import ForjePluginLoadError
 
 
-class BuildEnvironment:
+class Environment:
     def __init__(self) -> None:
         self.modules: list[Module] = [stdlib]
 

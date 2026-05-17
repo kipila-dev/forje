@@ -1,9 +1,9 @@
 import re
 
-from forje.core.context import Context
-from forje.core.ir import TargetIR, TokenIR, ValueIR
+from forje.core import Context
 from forje.dsl import Module
 from forje.errors import ForjeValidationError
+from forje.ir import ArtifactNode, TargetNode, TokenNode, ValueNode
 
 __all__ = ["stdlib"]
 
@@ -22,7 +22,7 @@ def create_target(ctx: Context, id_: str) -> None:
             msg = f"Duplicate target: {id_}"
             raise ForjeValidationError(msg)
 
-        ctx.ir.targets[id_] = TargetIR(id=id_)
+        ctx.ir.targets[id_] = TargetNode(id=id_)
 
 
 @stdlib.export(name="_sys_target_add_token")
@@ -39,11 +39,28 @@ def target_add_token(
         msg = f"Invalid target: {target_id}"
         raise ForjeValidationError(msg) from None
 
-    target.tokens[token_name] = TokenIR(
+    target.tokens[token_name] = TokenNode(
         name=token_name,
         type_=token_type,
-        mapping={k: ValueIR(v) for k, v in token_mapping.items()},
+        mapping={k: ValueNode(v) for k, v in token_mapping.items()},
     )
+
+
+@stdlib.export(name="_sys_target_add_artifact")
+def target_add_artifact(
+    ctx: Context,
+    target_id: str,
+    artifact_format: str,
+    artifact_path: str,
+) -> None:
+    try:
+        target = ctx.ir.targets[target_id]
+    except LookupError:
+        msg = f"Invalid target: {target_id}"
+        raise ForjeValidationError(msg) from None
+
+    artifact = ArtifactNode(format=artifact_format, output_path=artifact_path)
+    target.artifacts.append(artifact)
 
 
 @stdlib.export(name="_sys_color_parse_hex")
