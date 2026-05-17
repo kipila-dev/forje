@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 
 import starlark
 
-from forje.core.context import Context, context_proxy
+from forje.core import Context
+from forje.core.context import context_proxy
 from forje.errors import ForjeEvalError, ForjeParseError
 from forje.ir import IR
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from forje.core.environment import Environment
     from forje.dsl.module import Module
 
-__all__ = ["run_build"]
+__all__ = ["compile_"]
 
 _GLOBALS = starlark.Globals.standard().extended_by(
     [
@@ -91,7 +92,7 @@ def _parse_and_eval(
         raise ForjeEvalError(str(e)) from e
 
 
-def run_build(env: Environment, source: str) -> IR:
+def compile_(env: Environment, source: str) -> IR:
     """Evaluate a Forje build script.
 
     Args:

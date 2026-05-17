@@ -7,11 +7,11 @@ import typer
 from rich import print  # noqa: A004
 from rich.logging import RichHandler
 
-import forje.core.compiler
 from forje import __version__
 from forje.cli.ui import error, success
 from forje.cli.utils import format_elapsed
 from forje.core.environment import Environment
+from forje.driver import Driver
 from forje.errors import ForjeEvalError, ForjeParseError, ForjePluginLoadError
 
 logging.basicConfig(
@@ -73,8 +73,7 @@ def build() -> None:
 
     try:
         env = Environment().load_plugins()
-        ir = forje.core.compiler.run_build(env, source)
-        print(ir)
+        Driver(env).build(source)
     except (ForjePluginLoadError, ForjeParseError, ForjeEvalError) as e:
         error(str(e))
         raise typer.Exit(code=1) from e
