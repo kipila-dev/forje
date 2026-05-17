@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Annotated
 
 import typer
-from rich import print
+from rich import print  # noqa: A004
 from rich.logging import RichHandler
 
 import forje.core.compiler

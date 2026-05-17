@@ -18,8 +18,9 @@ class TokenNode:
 
 @dataclass
 class ArtifactNode:
-    format: str
-    output_path: str
+    platform: str
+    path: str
+    stem: str | None = None
 
 
 @dataclass

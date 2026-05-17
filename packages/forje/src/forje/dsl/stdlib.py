@@ -29,9 +29,9 @@ def create_target(ctx: Context, id_: str) -> None:
 def target_add_token(
     ctx: Context,
     target_id: str,
-    token_name: str,
-    token_type: str,
-    token_mapping: dict[str, str],
+    name: str,
+    type_: str,
+    mapping: dict[str, str],
 ) -> None:
     try:
         target = ctx.ir.targets[target_id]
@@ -39,10 +39,10 @@ def target_add_token(
         msg = f"Invalid target: {target_id}"
         raise ForjeValidationError(msg) from None
 
-    target.tokens[token_name] = TokenNode(
-        name=token_name,
-        type_=token_type,
-        mapping={k: ValueNode(v) for k, v in token_mapping.items()},
+    target.tokens[name] = TokenNode(
+        name=name,
+        type_=type_,
+        mapping={k: ValueNode(v) for k, v in mapping.items()},
     )
 
 
@@ -50,8 +50,9 @@ def target_add_token(
 def target_add_artifact(
     ctx: Context,
     target_id: str,
-    artifact_format: str,
-    artifact_path: str,
+    platform: str,
+    path: str,
+    stem: str | None = None,
 ) -> None:
     try:
         target = ctx.ir.targets[target_id]
@@ -59,7 +60,7 @@ def target_add_artifact(
         msg = f"Invalid target: {target_id}"
         raise ForjeValidationError(msg) from None
 
-    artifact = ArtifactNode(format=artifact_format, output_path=artifact_path)
+    artifact = ArtifactNode(platform=platform, path=path, stem=stem)
     target.artifacts.append(artifact)
 
 
