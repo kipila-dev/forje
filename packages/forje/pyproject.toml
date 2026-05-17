@@ -21,6 +21,9 @@ dependencies = ["ruff", "basedpyright", "pytest"]
 [project.scripts]
 forje = "forje.cli.main:app"
 
+[project.entry-points."forje.backend"]
+android = "forje.backend.android:Android"
+
 [tool.ruff]
 target-version = "py312"
 

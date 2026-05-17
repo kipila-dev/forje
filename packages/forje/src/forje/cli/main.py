@@ -12,7 +12,7 @@ from forje.cli.ui import error, success
 from forje.cli.utils import format_elapsed
 from forje.core.environment import Environment
 from forje.driver import Driver
-from forje.errors import ForjeEvalError, ForjeParseError, ForjePluginLoadError
+from forje.errors import ForjeError
 
 logging.basicConfig(
     level=logging.INFO,
@@ -74,7 +74,7 @@ def build() -> None:
     try:
         env = Environment().load_plugins()
         Driver(env).build(source)
-    except (ForjePluginLoadError, ForjeParseError, ForjeEvalError) as e:
+    except ForjeError as e:
         error(str(e))
         raise typer.Exit(code=1) from e
 

@@ -1,3 +1,12 @@
+__all__ = [
+    "ForjeError",
+    "ForjeEvalError",
+    "ForjeParseError",
+    "ForjePluginLoadError",
+    "ForjeValidationError",
+]
+
+
 class ForjeError(Exception):
     """Base class for all Forje errors."""
 
