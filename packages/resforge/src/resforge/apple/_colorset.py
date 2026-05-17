@@ -52,7 +52,7 @@ class ColorSet(AssetNode):
 
         if frozenset({"dark", "high"}) in seen and frozenset({"dark"}) not in seen:
             msg = (
-                "ColorSet with [dark, high]' variant must also include a [dark] variant"
+                "ColorSet with [dark, high] variant must also include a [dark] variant"
             )
             raise ValueError(msg)
 
