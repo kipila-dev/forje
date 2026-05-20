@@ -4,8 +4,8 @@ from pathlib import Path
 from re import Pattern
 from typing import Self
 
+from resforge import Color
 from resforge._utils import atomic_write, require_context
-from resforge.types import Color
 
 from .types import Dimension, PluralValues
 
@@ -144,8 +144,8 @@ class ValuesWriter:
 
         """
         for name, color in values.items():
-            resolved = Color(color)
-            self._append("color", name, resolved.hex)
+            resolved = Color.parse(color)
+            self._append("color", name, resolved.to_srgb_argb_hex())
         return self
 
     @require_context

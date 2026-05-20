@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Self, final, override
 
+from resforge import Color
 from resforge._utils import atomic_write, require_context
 from resforge.codegen.kotlin import KotlinFile, KotlinObject
-from resforge.types import Color
 
 if TYPE_CHECKING:
     from resforge.android.types import Dimension
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 __all__ = ["ComposeWriter"]
 
 
+@final
 class _ComposeContext:
     def __init__(self, file: KotlinFile) -> None:
         self._file = file
@@ -24,20 +25,20 @@ class _ComposeContext:
 
 class _BaseComposeScope:
     def __init__(self, ctx: _ComposeContext, target: KotlinFile | KotlinObject) -> None:
-        self._ctx = ctx
-        self._target = target
-        self._active = False
+        self._ctx: _ComposeContext = ctx
+        self._target: KotlinFile | KotlinObject = target
+        self._active: bool = False
 
     def __enter__(self) -> Self:
         self._active = True
         return self
 
-    def __exit__(self, exc_type, *_) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         self._active = False
 
     @staticmethod
     def _to_compose_color_literal(color: Color) -> str:
-        return f"Color({color.hex.replace('#', '0x')})"
+        return f"Color({color.to_srgb_argb_hex(prefix="0x")})"
 
     @staticmethod
     def _to_compose_dimen_literal(dimen: Dimension) -> str:
@@ -49,7 +50,7 @@ class _BaseComposeScope:
         if values:
             self._ctx.add_imports("androidx.compose.ui.graphics.Color")
         for name, color in values.items():
-            resolved = Color(color)
+            resolved = Color.parse(color)
             self._target.property(
                 name=name,
                 type_="Color",
@@ -87,6 +88,7 @@ class _ObjectScope(_BaseComposeScope):
     pass
 
 
+@final
 class ComposeWriter(_BaseComposeScope):
     """A fluent context manager for generating Jetpack Compose color definitions.
 
@@ -109,7 +111,9 @@ class ComposeWriter(_BaseComposeScope):
         self._path = Path(path)
         self._package = package
         self._active = False
+        self._kotlin_file = KotlinFile(package=self._package)
 
+    @override
     def __enter__(self) -> Self:
         self._kotlin_file = KotlinFile(package=self._package)
 
@@ -120,7 +124,8 @@ class ComposeWriter(_BaseComposeScope):
 
         return self
 
-    def __exit__(self, exc_type, *_) -> None:
+    @override
+    def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         try:
             if exc_type is None:
                 with atomic_write(self._path) as tf:

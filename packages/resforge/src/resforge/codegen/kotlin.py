@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import IO, Literal, Self
+from typing import IO, Literal, Self, final
 
 PropertyMutability = Literal["val", "var"]
 
@@ -18,6 +18,7 @@ class KotlinProperty:
         return f"{self.mutability} {self.name}: {self.type_} = {self.value}"
 
 
+@final
 class KotlinObject:
     """A Kotlin object declaration."""
 
@@ -33,7 +34,7 @@ class KotlinObject:
         mutability: PropertyMutability = "val",
     ) -> Self:
         self._properties.append(
-            KotlinProperty(name=name, type_=type_, value=value, mutability=mutability)
+            KotlinProperty(name=name, type_=type_, value=value, mutability=mutability),
         )
         return self
 
@@ -47,6 +48,7 @@ class KotlinObject:
         return "\n".join(lines)
 
 
+@final
 class KotlinFile:
     """A Kotlin file declaration."""
 
@@ -60,7 +62,11 @@ class KotlinFile:
         return self
 
     def property(
-        self, name: str, type_: str, value: str, mutability: PropertyMutability = "val"
+        self,
+        name: str,
+        type_: str,
+        value: str,
+        mutability: PropertyMutability = "val",
     ) -> Self:
         self._members.append(KotlinProperty(name, type_, value, mutability))
         return self
@@ -75,7 +81,7 @@ class KotlinFile:
         if self._imports:
             sections.append("\n".join(f"import {fqn}" for fqn in sorted(self._imports)))
 
-        current_props = []
+        current_props: list[str] = []
         for member in self._members:
             if isinstance(member, KotlinProperty):
                 current_props.append(member.render())

@@ -1,9 +1,9 @@
 import shutil
 from pathlib import Path
-from typing import Self
+from typing import Self, final
 
+from resforge import Color
 from resforge._utils import require_context
-from resforge.types import Color
 
 from ._base import write_contents
 from ._colorset import ColorSet
@@ -12,6 +12,7 @@ from .types import AppleColor
 __all__ = ["AssetCatalog"]
 
 
+@final
 class AssetCatalog:
     """A fluent context manager for generating Apple Asset Catalogs (.xcassets).
 
@@ -44,7 +45,7 @@ class AssetCatalog:
         self._temp_path.mkdir(parents=True)
         return self
 
-    def __exit__(self, exc_type, *_) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         try:
             if exc_type is None:
                 contents = {"info": {"author": "xcode", "version": 1}}
@@ -58,15 +59,19 @@ class AssetCatalog:
             self._active = False
 
     @require_context
-    def colorset(self, name: str, *colors: str | Color | AppleColor) -> Self:
+    def colorset(self, name: str, *colors: AppleColor | list[AppleColor]) -> Self:
         """Creates a .colorset folder within the catalog.
 
         Args:
             name: The name of the color resource (without .colorset extension).
-            *colors: One or more color definitions. Accepts hex strings,
-                Color objects, or AppleColor objects for platform-specific specs.
+            *colors: One or more AppleColor definitions.
 
         """
         with ColorSet(self._temp_path, name) as cs:
-            cs.color(*colors)
+            for value in colors:
+                match value:
+                    case list():
+                        cs.color(*value)
+                    case AppleColor():
+                        cs.color(value)
         return self

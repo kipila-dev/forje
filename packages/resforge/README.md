@@ -1,13 +1,15 @@
 # resforge
 
-A type-safe Python DSL for generating native Android and iOS resources from design tokens.
+A type-safe Python DSL for generating native Android and iOS resources from
+design tokens.
 
 ## Features
 
 - Fluent, Pythonic API
 - Jetpack Compose theme generation with type-safe color and dimension properties
 - Supports all Android `res/values/` types
-- Native Apple Asset Catalog (`.xcassets`) with dark mode support
+- Native Apple Asset Catalog (`.xcassets`) with Display P3 support and automatic
+  sRGB fallback
 - Built-in validation for resource names and color formats
 
 ## Installation
@@ -56,8 +58,8 @@ with ValuesWriter("res/values/resources.xml") as res:
     )
 
     res.color(
-        primary="#FF6200EE",
-        secondary="#FF03DAC5",
+        primary="#6200EE",
+        secondary="#03DAC5",
     )
 
     res.dimension(
@@ -82,15 +84,15 @@ with ValuesWriter("res/values/resources.xml") as res:
 ### Asset Catalog (iOS)
 
 ```python
+from resforge import Color
 from resforge.apple import Appearance, AppleColor, AssetCatalog
 
 with AssetCatalog("App", "Assets") as ac:
     ac.colorset(
-        "Background",
-        "#ffffff",
-        AppleColor("#000000", appearances=[Appearance.Dark]),
+        "MyColor",
+        AppleColor.create(Color.parse("oklch(70% 0.1 30)")),
+        AppleColor.create("#000000", appearances=[Appearance.Dark]),
     )
-
 ```
 
 ```json
@@ -104,9 +106,9 @@ with AssetCatalog("App", "Assets") as ac:
       "idiom": "universal",
       "color": {
         "components": {
-          "red": "1.000",
-          "green": "1.000",
-          "blue": "1.000",
+          "red": "0.837",
+          "green": "0.527",
+          "blue": "0.475",
           "alpha": "1.000"
         },
         "color-space": "srgb"

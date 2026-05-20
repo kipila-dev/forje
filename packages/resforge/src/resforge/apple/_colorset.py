@@ -1,7 +1,5 @@
 from pathlib import Path
-from typing import Any, Self, assert_never
-
-from resforge.types import Color
+from typing import Self, override
 
 from ._base import AssetNode
 from .types import AppleColor
@@ -12,18 +10,13 @@ class ColorSet(AssetNode):
         super().__init__(path, name, "colorset")
         self._colors: list[AppleColor] = []
 
-    def color(self, *colors: str | Color | AppleColor) -> Self:
-        for c in colors:
-            match c:
-                case str() | Color():
-                    self._colors.append(AppleColor(Color(c)))
-                case AppleColor():
-                    self._colors.append(c)
-                case _:
-                    assert_never(c)
+    def color(self, *colors: AppleColor) -> Self:
+        for color in colors:
+            self._colors.append(color)
         return self
 
-    def _create_contents(self) -> dict[str, Any]:
+    @override
+    def _create_contents(self) -> dict[str, object]:
         self._validate()
 
         return {

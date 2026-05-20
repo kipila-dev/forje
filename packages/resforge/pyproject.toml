@@ -30,66 +30,34 @@ classifiers = [
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Build Tools",
 ]
-
-[tool.hatch.version]
-path = "src/resforge/__init__.py"
-
-[tool.hatch.envs.default]
-extra-dependencies = [
-  "pytest",
-  "defusedxml",
-  "ruff",
-  "basedpyright",
-]
+dependencies = ["coloraide"]
 
 [project.urls]
 Homepage = "https://kipila.dev"
 Repository = "https://github.com/kipila-dev/resforge"
 
+[tool.hatch.version]
+path = "src/resforge/__init__.py"
+
+[tool.hatch.envs.default]
+extra-dependencies = ["basedpyright", "defusedxml", "pytest", "ruff"]
+
 [tool.ruff]
 target-version = "py312"
-line-length = 120
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = [
-  "ANN001",
-  "ANN002",
-  "ANN003",
-  "COM812",
-  "COM819",
-  "D100",
-  "D102",
-  "D104",
-  "D105",
-  "D107",
-  "D206",
-  "D300",
-  "D401",
-  "E111",
-  "E114",
-  "E117",
-  "FIX",
-  "I001",
-  "PLR2004",
-  "Q000",
-  "Q001",
-  "Q002",
-  "Q003",
-  "TD",
-  "W191",
-]
-fixable = ["ALL"]
+ignore = ["D100", "D104", "D105", "ANN401", "PLR2004", "E741"]
 
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = [
-   "ANN201",
-   "D101",
-   "D103",
-   "EM101",
-   "S101",
-   "TRY301",
-]
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/*.py" = ["S101", "D102", "ANN201", "D101", "D103", "ANN001"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.basedpyright]
-typeCheckingMode = "standard"
+include = ["src"]
+typeCheckingMode = "recommended"
+pythonVersion = "3.12"
+ignore = ["tests"]
+reportUnusedCallResult = "none"

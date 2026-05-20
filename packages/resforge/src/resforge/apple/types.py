@@ -1,8 +1,11 @@
-from dataclasses import InitVar, dataclass, field
-from enum import Enum
-from typing import Any, Literal
+from __future__ import annotations
 
-from resforge.types import Color
+import typing
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Literal
+
+from resforge import Color
 
 ColorSpace = Literal["srgb", "display-p3"]
 DisplayGamut = Literal["sRGB", "display-P3"]
@@ -37,26 +40,22 @@ class AppleColor:
     idiom, appearance, and display configuration.
     """
 
-    color: InitVar[str | Color]
-    components: Color = field(init=False)
+    components: tuple[float, float, float, float]
     color_space: ColorSpace = "srgb"
     idiom: Idiom = "universal"
     subtype: Subtype | None = None
     appearances: list[Appearance] = field(default_factory=list)
     display_gamut: DisplayGamut | None = None
 
-    def __post_init__(self, color: str | Color) -> None:
-        self.components = Color(color)
-
-    def to_dict(self) -> dict[str, Any]:
-        result: dict[str, Any] = {
+    def to_dict(self) -> dict[str, typing.Any]:
+        result: dict[str, typing.Any] = {
             "idiom": self.idiom,
             "color": {
                 "components": {
-                    "red": f"{self.components.red:.3f}",
-                    "green": f"{self.components.green:.3f}",
-                    "blue": f"{self.components.blue:.3f}",
-                    "alpha": f"{self.components.alpha:.3f}",
+                    "red": f"{self.components[0]:.3f}",
+                    "green": f"{self.components[1]:.3f}",
+                    "blue": f"{self.components[2]:.3f}",
+                    "alpha": f"{self.components[3]:.3f}",
                 },
             },
         }
@@ -75,3 +74,36 @@ class AppleColor:
             result["subtype"] = self.subtype
 
         return result
+
+    @classmethod
+    def create(
+        cls,
+        color: str | Color,
+        subtype: Subtype | None = None,
+        appearances: list[Appearance] | None = None,
+    ) -> list[AppleColor]:
+        if appearances is None:
+            appearances = []
+        apple_colors: list[AppleColor] = []
+        color = Color.parse(color)
+        apple_colors.append(
+            cls(
+                components=color.to_srgb_components(),
+                color_space="srgb",
+                idiom="universal",
+                subtype=subtype,
+                appearances=appearances,
+            ),
+        )
+        if not color.in_srgb_gamut():
+            apple_colors.append(
+                cls(
+                    components=color.to_p3_components(),
+                    color_space="display-p3",
+                    idiom="universal",
+                    subtype=subtype,
+                    appearances=appearances,
+                    display_gamut="display-P3",
+                ),
+            )
+        return apple_colors

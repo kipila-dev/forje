@@ -3,6 +3,7 @@ import json
 import pytest
 
 from resforge.apple.catalog import AssetCatalog
+from resforge.apple.types import AppleColor
 
 
 def test_asset_catalog_lifecycle(tmp_path):
@@ -12,7 +13,7 @@ def test_asset_catalog_lifecycle(tmp_path):
     temp_path = output_dir / f".tmp_{catalog_name}.xcassets"
 
     with AssetCatalog(output_dir, catalog_name) as assets:
-        assets.colorset("Primary", "#FF0000")
+        assets.colorset("Primary", AppleColor.create("#FF0000"))
         assert temp_path.exists()
         assert not final_path.exists()
 
@@ -33,7 +34,7 @@ def test_asset_catalog_atomic_failure(tmp_path):
 
     try:
         with AssetCatalog(output_dir, catalog_name) as assets:
-            assets.colorset("Primary", "#FF0000")
+            assets.colorset("Primary", AppleColor.create("#FF0000"))
             assert temp_path.exists()
             raise RuntimeError
     except RuntimeError:
@@ -52,7 +53,7 @@ def test_asset_catalog_overwrites_existing(tmp_path):
     (final_path / "old.txt").write_text("stale data")
 
     with AssetCatalog(output_dir, catalog_name) as assets:
-        assets.colorset("Secondary", "#00FF00")
+        assets.colorset("Secondary", AppleColor.create("#00FF00"))
 
     assert final_path.exists()
     assert not (final_path / "old.txt").exists()
@@ -63,4 +64,4 @@ def test_require_context_enforcement(tmp_path):
     catalog = AssetCatalog(tmp_path / "App", "Assets")
 
     with pytest.raises(RuntimeError):
-        catalog.colorset("Error", "#000000")
+        catalog.colorset("Error", AppleColor.create("#000000"))

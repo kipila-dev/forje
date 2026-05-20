@@ -3,8 +3,8 @@ from pathlib import Path
 import pytest
 from defusedxml.ElementTree import parse
 
+from resforge import Color
 from resforge.android import PluralValues, ValuesWriter, dp, inch, mm, pt, px, sp
-from resforge.types import Color
 
 
 class TestDimension:
@@ -62,8 +62,9 @@ class TestValuesWriterContextManager:
         assert xml_path.parent.exists()
 
     def test_no_write_on_exception(self, xml_path: Path):
-        with pytest.raises(ValueError, match="oops"), ValuesWriter(xml_path) as _:
-            raise ValueError("oops")
+        msg = "boom"
+        with pytest.raises(ValueError, match="boom"), ValuesWriter(xml_path) as _:
+            raise ValueError(msg)
         assert not xml_path.exists()
 
     def test_runtime_error_outside_context(self, xml_path: Path):
@@ -139,14 +140,14 @@ class TestBoolean:
 class TestColor:
     def test_hex_string(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
-            res.color(primary="#FF6200EE")
+            res.color(primary="#6200EEFF")
         elem = parse(xml_path).find("color[@name='primary']")
         assert elem is not None
         assert elem.text == "#FF6200EE"
 
     def test_color(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
-            res.color(primary=Color("#FF6200EE"))
+            res.color(primary=Color.parse("#6200EEFF"))
         elem = parse(xml_path).find("color[@name='primary']")
         assert elem is not None
         assert elem.text == "#FF6200EE"
