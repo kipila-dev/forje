@@ -1,6 +1,5 @@
 from .catalog import AssetCatalog
-from .types import (Appearance, AppleColor, ColorSpace, DisplayGamut, Idiom,
-                    Subtype)
+from .types import Appearance, AppleColor, ColorSpace, DisplayGamut, Idiom, Subtype
 
 __all__ = [
     "Appearance",

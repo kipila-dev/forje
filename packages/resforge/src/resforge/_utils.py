@@ -28,7 +28,7 @@ def require_context[T: _HasActiveContext, **P, R](
 
     @wraps(func)
     def wrapper(self: T, *args: P.args, **kwargs: P.kwargs) -> R:
-        if not self._active:
+        if not self._active:  # pyright: ignore[reportPrivateUsage]
             msg = f"'{func.__name__}' requires an active 'with' context."
             raise RuntimeError(msg)
         return func(self, *args, **kwargs)
@@ -48,7 +48,9 @@ def atomic_write(target_path: Path) -> Generator[IO[bytes], None, None]:
     temp_path = None
     try:
         with NamedTemporaryFile(
-            dir=target_path.parent, delete=False, suffix=".tmp"
+            dir=target_path.parent,
+            delete=False,
+            suffix=".tmp",
         ) as tf:
             temp_path = Path(tf.name)
             yield tf

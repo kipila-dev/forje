@@ -4,10 +4,10 @@ import pytest
 from defusedxml.ElementTree import parse
 
 from resforge import Color
-from resforge.android import PluralValues, ValuesWriter, dp, inch, mm, pt, px, sp
+from resforge.android import PluralValues, ValuesWriter, dp, em, inch, mm, pt, px, sp
 
 
-class TestDimension:
+class TestDimensionType:
     def test_str(self):
         assert str(dp(8)) == "8dp"
         assert str(sp(16)) == "16sp"
@@ -63,7 +63,7 @@ class TestValuesWriterContextManager:
 
     def test_no_write_on_exception(self, xml_path: Path):
         msg = "boom"
-        with pytest.raises(ValueError, match="boom"), ValuesWriter(xml_path) as _:
+        with pytest.raises(ValueError, match="boom"), ValuesWriter(xml_path):
             raise ValueError(msg)
         assert not xml_path.exists()
 
@@ -99,7 +99,7 @@ class TestString:
         root = parse(xml_path)
         elem = root.find("string[@name='msg']")
         assert elem is not None
-        assert "\\'" in elem.text  # type: ignore[operator]
+        assert "\\'" in elem.text  # pyright: ignore[reportOperatorIssue]
 
     def test_escapes_at_sign(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
@@ -157,7 +157,7 @@ class TestColor:
             res.color(primary="notacolor")
 
 
-class TestDimensionWriter:
+class TestDimension:
     def test_dp(self, xml_path: Path):
         with ValuesWriter(xml_path) as res:
             res.dimension(padding=dp(8))
@@ -171,6 +171,13 @@ class TestDimensionWriter:
         elem = parse(xml_path).find("dimen[@name='text']")
         assert elem is not None
         assert elem.text == "16sp"
+
+    def test_em(self, xml_path: Path):
+        with (
+            pytest.raises(ValueError, match="Unsupported"),
+            ValuesWriter(xml_path) as res,
+        ):
+            res.dimension(text=em(16))
 
 
 class TestInteger:

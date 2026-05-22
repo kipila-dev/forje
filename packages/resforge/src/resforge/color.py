@@ -7,12 +7,10 @@ import coloraide
 __all__ = ["Color"]
 
 
-def _to_gamut(color: coloraide.Color) -> coloraide.Color:
-    return color if color.in_gamut() else color.fit(method="oklch-chroma")
-
-
 @dataclass(slots=True, frozen=True)
 class Color:
+    """A representation of a color, stored internally in the CIE XYZ color space."""
+
     x: float
     y: float
     z: float
@@ -30,6 +28,7 @@ class Color:
 
     @classmethod
     def parse(cls, value: str | Color) -> Color:
+        """Create a Color instance from a string or another Color object."""
         match value:
             case str():
                 try:
@@ -43,6 +42,7 @@ class Color:
 
     @classmethod
     def srgb(cls, r: float, g: float, b: float, alpha: float = 1.0) -> Color:
+        """Create a Color instance from sRGB components."""
         if not (0 <= r <= 1 and 0 <= g <= 1 and 0 <= b <= 1):
             msg = "sRGB components must be in [0.0, 1.0]"
             raise ValueError(msg)
@@ -54,6 +54,7 @@ class Color:
 
     @classmethod
     def p3(cls, r: float, g: float, b: float, alpha: float = 1.0) -> Color:
+        """Create a Color instance from Display P3 components."""
         if not (0 <= r <= 1 and 0 <= g <= 1 and 0 <= b <= 1):
             msg = "Display P3 components must be in [0.0, 1.0]"
             raise ValueError(msg)
@@ -65,6 +66,7 @@ class Color:
 
     @classmethod
     def oklch(cls, l: float, c: float, h: float, alpha: float = 1.0) -> Color:
+        """Create a Color instance from OKLCh components."""
         if not (0 <= l <= 1):
             msg = "OKLCh lightness must be in [0.0, 1.0]"
             raise ValueError(msg)
@@ -81,25 +83,40 @@ class Color:
         return coloraide.Color("xyz-d65", [self.x, self.y, self.z], self.alpha)
 
     def to_srgb_components(self) -> tuple[float, float, float, float]:
-        srgb = _to_gamut(self._to_coloraide().convert("srgb"))
+        """Convert the color to sRGB components (R, G, B, A).
+
+        Colors outside sRGB gamut are automatically clipped to the nearest valid
+        boundary.
+        """
+        srgb = self._to_coloraide().convert("srgb").clip()
         return (
-            round(srgb["red"], 3),
-            round(srgb["green"], 3),
-            round(srgb["blue"], 3),
-            round(self.alpha, 3),
+            round(srgb["red"], 3) + 0.0,
+            round(srgb["green"], 3) + 0.0,
+            round(srgb["blue"], 3) + 0.0,
+            round(self.alpha, 3) + 0.0,
         )
 
     def to_p3_components(self) -> tuple[float, float, float, float]:
-        p3 = _to_gamut(self._to_coloraide().convert("display-p3"))
+        """Convert the color to Display P3 components (R, G, B, A).
+
+        Colors outside Display P3 gamut are automatically clipped to the nearest
+        valid boundary.
+        """
+        p3 = self._to_coloraide().convert("display-p3").clip()
         return (
-            round(p3["red"], 3),
-            round(p3["green"], 3),
-            round(p3["blue"], 3),
-            round(self.alpha, 3),
+            round(p3["red"], 3) + 0.0,
+            round(p3["green"], 3) + 0.0,
+            round(p3["blue"], 3) + 0.0,
+            round(self.alpha, 3) + 0.0,
         )
 
     def to_srgb_argb_hex(self, prefix: str = "#") -> str:
-        srgb = _to_gamut(self._to_coloraide().convert("srgb"))
+        """Convert the color to an ARGB hexadecimal string.
+
+        Colors outside sRGB gamut are automatically clipped to the nearest valid
+        boundary.
+        """
+        srgb = self._to_coloraide().convert("srgb").clip()
         a = round(self.alpha * 255)
         r = round(srgb["red"] * 255)
         g = round(srgb["green"] * 255)
@@ -107,4 +124,5 @@ class Color:
         return f"{prefix}{a:02X}{r:02X}{g:02X}{b:02X}"
 
     def in_srgb_gamut(self) -> bool:
+        """Check if the color is representable in the sRGB color space."""
         return self._to_coloraide().in_gamut("srgb")

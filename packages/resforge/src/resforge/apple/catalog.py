@@ -2,7 +2,6 @@ import shutil
 from pathlib import Path
 from typing import Self, final
 
-from resforge import Color
 from resforge._utils import require_context
 
 from ._base import write_contents
@@ -59,7 +58,7 @@ class AssetCatalog:
             self._active = False
 
     @require_context
-    def colorset(self, name: str, *colors: AppleColor | list[AppleColor]) -> Self:
+    def colorset(self, name: str, *colors: AppleColor) -> Self:
         """Creates a .colorset folder within the catalog.
 
         Args:
@@ -67,11 +66,6 @@ class AssetCatalog:
             *colors: One or more AppleColor definitions.
 
         """
-        with ColorSet(self._temp_path, name) as cs:
-            for value in colors:
-                match value:
-                    case list():
-                        cs.color(*value)
-                    case AppleColor():
-                        cs.color(value)
+        with ColorSet(self._temp_path, name) as colorset:
+            colorset.color(*colors)
         return self

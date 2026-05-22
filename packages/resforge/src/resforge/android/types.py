@@ -1,10 +1,11 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal, NotRequired, TypedDict, final, override
 
 DimensionUnit = Literal["dp", "sp", "px", "pt", "mm", "in", "em"]
 
 
+@final
 @dataclass(frozen=True)
 class Dimension:
     """Represents an Android dimension value (e.g., '16dp', '12sp').
@@ -20,9 +21,11 @@ class Dimension:
     value: int | float
     unit: DimensionUnit
 
+    @override
     def __str__(self) -> str:
         return f"{self.value:g}{self.unit}"
 
+    @override
     def __repr__(self) -> str:
         return f"Dimension(value={self.value!r}, unit={self.unit!r})"
 
@@ -33,7 +36,8 @@ class Dimension:
 
 
 def _make_unit_func(
-    unit: DimensionUnit, doc: str
+    unit: DimensionUnit,
+    doc: str,
 ) -> Callable[[int | float], Dimension]:
     def f(value: float) -> Dimension:
         return Dimension(value, unit)
@@ -45,7 +49,8 @@ def _make_unit_func(
 
 dp = _make_unit_func("dp", "Create a dimension in density-independent pixels (dp).")
 sp = _make_unit_func(
-    "sp", "Create a dimension in scale-independent pixels (sp). Use for text sizes."
+    "sp",
+    "Create a dimension in scale-independent pixels (sp). Use for text sizes.",
 )
 px = _make_unit_func("px", "Create a dimension in pixels (px).")
 pt = _make_unit_func("pt", "Create a dimension in points (pt).")

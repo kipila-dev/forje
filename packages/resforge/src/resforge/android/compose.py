@@ -36,9 +36,16 @@ class _BaseComposeScope:
     def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         self._active = False
 
-    @staticmethod
-    def _to_compose_color_literal(color: Color) -> str:
-        return f"Color({color.to_srgb_argb_hex(prefix="0x")})"
+    def _to_compose_color_literal(self, color: Color) -> str:
+        if color.in_srgb_gamut():
+            return f"Color({color.to_srgb_argb_hex(prefix="0x")})"
+
+        self._ctx.add_imports("androidx.compose.ui.graphics.colorspace.ColorSpaces")
+        r, g, b, a = color.to_p3_components()
+        return (
+            f"Color(red = {r}f, green = {g}f, blue = {b}f, alpha = {a}f, "
+            f"colorSpace = ColorSpaces.DisplayP3)"
+        )
 
     @staticmethod
     def _to_compose_dimen_literal(dimen: Dimension) -> str:
@@ -60,7 +67,9 @@ class _BaseComposeScope:
 
     @require_context
     def dimension(self, **values: Dimension) -> Self:
-        """Appends one or more Dimension properties to the Kotlin object. Supports dp, sp and em.
+        """Appends one or more Dimension properties to the Kotlin object.
+
+        Supports dp, sp and em.
 
         Raises:
             ValueError: If an unsupported unit (not dp, sp, or em) is provided.
@@ -69,7 +78,7 @@ class _BaseComposeScope:
         mapping = {"dp": "Dp", "sp": "Sp", "em": "TextUnit"}
         for name, dimen in values.items():
             if dimen.unit not in mapping:
-                msg = f"Unsupported dimension type. Only dp, sp and em are supported (got {dimen.unit})."
+                msg = "Unsupported dimension type. Only dp, sp and em are supported."
                 raise ValueError(msg)
             self._ctx.add_imports(
                 f"androidx.compose.ui.unit.{dimen.unit}",
@@ -95,12 +104,20 @@ class ComposeWriter(_BaseComposeScope):
     Writes a Kotlin file containing typed Color or Dimension properties.
 
     Example:
-        >>> with ComposeWriter("ui/theme/Color.kt", package="com.example.theme", object_name="AppColors") as compose:
+        >>> with ComposeWriter(
+                "ui/theme/Color.kt",
+                package="com.example.theme",
+                object_name="AppColors"
+            ) as compose:
         ...     compose.color(primary="#6200EE", background="#FFFFFF")
 
     """
 
-    def __init__(self, path: str | Path, package: str) -> None:
+    def __init__(  # pyright: ignore[reportMissingSuperCall]
+        self,
+        path: str | Path,
+        package: str,
+    ) -> None:
         """Initializes the ComposeWriter.
 
         Args:
@@ -114,7 +131,7 @@ class ComposeWriter(_BaseComposeScope):
         self._kotlin_file = KotlinFile(package=self._package)
 
     @override
-    def __enter__(self) -> Self:
+    def __enter__(self) -> Self:  # pyright: ignore[reportMissingSuperCall]
         self._kotlin_file = KotlinFile(package=self._package)
 
         ctx = _ComposeContext(self._kotlin_file)
@@ -125,7 +142,11 @@ class ComposeWriter(_BaseComposeScope):
         return self
 
     @override
-    def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
+    def __exit__(  # pyright: ignore[reportMissingSuperCall]
+        self,
+        exc_type: type[BaseException] | None,
+        *_: object,
+    ) -> None:
         try:
             if exc_type is None:
                 with atomic_write(self._path) as tf:

@@ -40,7 +40,7 @@ Repository = "https://github.com/kipila-dev/resforge"
 path = "src/resforge/__init__.py"
 
 [tool.hatch.envs.default]
-extra-dependencies = ["basedpyright", "defusedxml", "pytest", "ruff"]
+dependencies = ["basedpyright", "defusedxml", "pytest", "ruff"]
 
 [tool.ruff]
 target-version = "py312"
@@ -50,7 +50,16 @@ select = ["ALL"]
 ignore = ["D100", "D104", "D105", "ANN401", "PLR2004", "E741"]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"tests/**/*.py" = ["S101", "D102", "ANN201", "D101", "D103", "ANN001"]
+"tests/**/*.py" = [
+  "ANN001",
+  "ANN201",
+  "D101",
+  "D102",
+  "D103",
+  "EM101",
+  "S101",
+  "TRY301",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -59,5 +68,4 @@ convention = "google"
 include = ["src"]
 typeCheckingMode = "recommended"
 pythonVersion = "3.12"
-ignore = ["tests"]
 reportUnusedCallResult = "none"

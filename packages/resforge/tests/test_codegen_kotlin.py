@@ -5,7 +5,10 @@ def test_property_render():
     val_prop = KotlinProperty(name="primary", type_="Color", value="Color(0xFF6200EE)")
     assert val_prop.render() == "val primary: Color = Color(0xFF6200EE)"
     var_prop = KotlinProperty(
-        name="primary", type_="Color", value="Color(0xFF6200EE)", mutability="var"
+        name="primary",
+        type_="Color",
+        value="Color(0xFF6200EE)",
+        mutability="var",
     )
     assert var_prop.render() == "var primary: Color = Color(0xFF6200EE)"
 
@@ -106,8 +109,10 @@ def test_file_write(tmp_path):
     f.import_("androidx.compose.ui.graphics.Color")
     f.member(
         KotlinObject("AppColors").property(
-            "primary", type_="Color", value="Color(0xFF6200EE)"
-        )
+            "primary",
+            type_="Color",
+            value="Color(0xFF6200EE)",
+        ),
     )
 
     output = tmp_path / "ui" / "theme" / "Color.kt"

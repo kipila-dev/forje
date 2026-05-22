@@ -11,8 +11,7 @@ class ColorSet(AssetNode):
         self._colors: list[AppleColor] = []
 
     def color(self, *colors: AppleColor) -> Self:
-        for color in colors:
-            self._colors.append(color)
+        self._colors.extend(colors)
         return self
 
     @override
@@ -21,7 +20,7 @@ class ColorSet(AssetNode):
 
         return {
             "info": {"author": "xcode", "version": 1},
-            "colors": [color.to_dict() for color in self._colors],
+            "colors": [entry for color in self._colors for entry in color.to_entries()],
         }
 
     def _validate(self) -> None:
@@ -31,7 +30,7 @@ class ColorSet(AssetNode):
 
         variants = [frozenset(a.setting for a in c.appearances) for c in self._colors]
 
-        seen = set()
+        seen: set[frozenset[str]] = set()
         for v in variants:
             if v in seen:
                 name = ", ".join(v) if v else "any"
@@ -50,5 +49,8 @@ class ColorSet(AssetNode):
             raise ValueError(msg)
 
         if frozenset({"light", "high"}) in seen and frozenset({"light"}) not in seen:
-            msg = "ColorSet with [light, high] variant must also include a [light] variant"
+            msg = (
+                "ColorSet with [light, high] variant "
+                "must also include a [light] variant"
+            )
             raise ValueError(msg)

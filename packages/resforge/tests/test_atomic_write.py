@@ -26,7 +26,8 @@ def test_no_corruption_on_exception(tmp_path):
     def _broken_write() -> None:
         with atomic_write(target) as f:
             f.write(b"new corrupted data")
-            raise RuntimeError("boom")
+            msg = "boom"
+            raise RuntimeError(msg)
 
     with pytest.raises(RuntimeError):
         _broken_write()

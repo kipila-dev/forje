@@ -1,5 +1,5 @@
 from .compose import ComposeWriter
-from .types import Dimension, PluralValues, dp, inch, mm, pt, px, sp
+from .types import Dimension, PluralValues, dp, em, inch, mm, pt, px, sp
 from .values import ValuesWriter
 
 __all__ = [
@@ -8,6 +8,7 @@ __all__ = [
     "PluralValues",
     "ValuesWriter",
     "dp",
+    "em",
     "inch",
     "mm",
     "pt",

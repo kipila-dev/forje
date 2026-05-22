@@ -2,7 +2,7 @@ import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from re import Pattern
-from typing import Self
+from typing import Self, final
 
 from resforge import Color
 from resforge._utils import atomic_write, require_context
@@ -15,6 +15,7 @@ _NAME_PATTERN = re.compile(r"^[a-z_][a-z0-9_]*$")
 _STYLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_\.]*$")
 
 
+@final
 class ValuesWriter:
     """A fluent context manager for generating Android XML resource files.
 
@@ -39,6 +40,7 @@ class ValuesWriter:
 
         # Structure: {"string": ["app_name"], ...}
         self._names: dict[str, set[str]] = {}
+        self._root = ET.Element("resources")
 
     def __enter__(self) -> Self:
         self._active = True
@@ -46,7 +48,7 @@ class ValuesWriter:
         self._names.clear()
         return self
 
-    def __exit__(self, exc_type, *_) -> None:
+    def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         try:
             if exc_type is None:
                 ET.indent(self._root, space=" " * 4, level=0)
@@ -70,7 +72,10 @@ class ValuesWriter:
         return text
 
     def _validate_name(
-        self, tag: str, name: str, pattern: Pattern[str] = _NAME_PATTERN
+        self,
+        tag: str,
+        name: str,
+        pattern: Pattern[str] = _NAME_PATTERN,
     ) -> None:
         if not pattern.match(name):
             msg = f"Invalid resource name '{name}'."
@@ -151,8 +156,11 @@ class ValuesWriter:
     @require_context
     def dimension(self, **values: Dimension) -> Self:
         """Appends one or more <dimen> resources."""
-        for name, val in values.items():
-            self._append("dimen", name, str(val))
+        for name, value in values.items():
+            if value.unit not in ["dp", "sp", "px", "pt", "in", "mm"]:
+                msg = f"Unsupported unit: {value.unit}"
+                raise ValueError(msg)
+            self._append("dimen", name, str(value))
         return self
 
     @require_context
@@ -197,12 +205,15 @@ class ValuesWriter:
     @require_context
     def style(self, name: str, parent: str | None = None, **items: str) -> Self:
         """Appends a <style> resource."""
-        attrs = {}
+        attrs: dict[str, str] = {}
         if parent:
             attrs["parent"] = parent
 
         style_elem = self._append(
-            "style", name, attrs=attrs, pattern=_STYLE_NAME_PATTERN
+            "style",
+            name,
+            attrs=attrs,
+            pattern=_STYLE_NAME_PATTERN,
         )
         for attr_name, val in items.items():
             ET.SubElement(style_elem, "item", attrib={"name": attr_name}).text = val
