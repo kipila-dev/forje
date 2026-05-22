@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from io import BytesIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Self, final, override
 
 from resforge import Color
 from resforge._codegen.kotlin import KotlinFile, KotlinObject
-from resforge._utils import atomic_write, require_context
+from resforge._utils import require_context
+from resforge.io import FileSystemSink, WriteSink
 
 if TYPE_CHECKING:
     from resforge.android.types import Dimension
@@ -73,7 +75,6 @@ class _BaseComposeScope:
 
         Raises:
             ValueError: If an unsupported unit (not dp, sp, or em) is provided.
-
         """
         mapping = {"dp": "Dp", "sp": "Sp", "em": "TextUnit"}
         for name, dimen in values.items():
@@ -110,24 +111,26 @@ class ComposeWriter(_BaseComposeScope):
                 object_name="AppColors"
             ) as compose:
         ...     compose.color(primary="#6200EE", background="#FFFFFF")
-
     """
 
     def __init__(  # pyright: ignore[reportMissingSuperCall]
         self,
         path: str | Path,
         package: str,
+        sink: WriteSink | None = None,
     ) -> None:
         """Initializes the ComposeWriter.
 
         Args:
             path: The filesystem path where the Kotlin file will be saved.
             package: The Kotlin package declaration.
-
+            sink: The custom output to write data to. If None,
+                defaults to a standard file write.
         """
+        self._active = False
         self._path = Path(path)
         self._package = package
-        self._active = False
+        self._sink = sink or FileSystemSink()
         self._kotlin_file = KotlinFile(package=self._package)
 
     @override
@@ -149,8 +152,9 @@ class ComposeWriter(_BaseComposeScope):
     ) -> None:
         try:
             if exc_type is None:
-                with atomic_write(self._path) as tf:
-                    self._kotlin_file.write(tf)
+                buf = BytesIO()
+                self._kotlin_file.write(buf)
+                self._sink.write(self._path, buf.getvalue())
         finally:
             self._active = False
 
@@ -163,7 +167,6 @@ class ComposeWriter(_BaseComposeScope):
 
         Returns:
             A new context tied to the generated object.
-
         """
         obj = KotlinObject(name=name)
         self._kotlin_file.member(obj)

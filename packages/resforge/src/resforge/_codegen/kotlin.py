@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 from typing import IO, Literal, Self, final
 
 PropertyMutability = Literal["val", "var"]
@@ -96,11 +95,5 @@ class KotlinFile:
 
         return "\n\n".join(sections) + "\n"
 
-    def write(self, dest: str | Path | IO[bytes]) -> None:
-        if isinstance(dest, (str, Path)):
-            path = Path(dest)
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open("wb") as f:
-                f.write(self.render().encode())
-        else:
-            dest.write(self.render().encode())
+    def write(self, dest: IO[bytes]) -> None:
+        dest.write(self.render().encode())

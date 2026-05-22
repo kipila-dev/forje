@@ -1,13 +1,15 @@
 from pathlib import Path
 from typing import Self, override
 
+from resforge.io import WriteSink
+
 from ._base import AssetNode
 from .types import AppleColor
 
 
 class ColorSet(AssetNode):
-    def __init__(self, path: str | Path, name: str) -> None:
-        super().__init__(path, name, "colorset")
+    def __init__(self, path: str | Path, name: str, sink: WriteSink) -> None:
+        super().__init__(path, name, "colorset", sink)
         self._colors: list[AppleColor] = []
 
     def color(self, *colors: AppleColor) -> Self:

@@ -1,11 +1,13 @@
 import re
 import xml.etree.ElementTree as ET
+from io import BytesIO
 from pathlib import Path
 from re import Pattern
 from typing import Self, final
 
 from resforge import Color
-from resforge._utils import atomic_write, require_context
+from resforge._utils import require_context
+from resforge.io import FileSystemSink, WriteSink
 
 from .types import Dimension, PluralValues
 
@@ -28,15 +30,17 @@ class ValuesWriter:
 
     """
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, sink: WriteSink | None = None) -> None:
         """Initializes the ValuesWriter.
 
         Args:
             path: The filesystem path where the XML will be saved.
-
+            sink: The custom output to write data to. If None,
+                defaults to a standard file write.
         """
-        self._path = Path(path)
         self._active = False
+        self._path = Path(path)
+        self._sink = sink or FileSystemSink()
 
         # Structure: {"string": ["app_name"], ...}
         self._names: dict[str, set[str]] = {}
@@ -52,14 +56,14 @@ class ValuesWriter:
         try:
             if exc_type is None:
                 ET.indent(self._root, space=" " * 4, level=0)
-                tree = ET.ElementTree(self._root)
-                with atomic_write(self._path) as tf:
-                    tree.write(
-                        tf,
-                        encoding="utf-8",
-                        xml_declaration=True,
-                        short_empty_elements=True,
-                    )
+                buf = BytesIO()
+                ET.ElementTree(self._root).write(
+                    buf,
+                    encoding="utf-8",
+                    xml_declaration=True,
+                    short_empty_elements=True,
+                )
+                self._sink.write(self._path, buf.getvalue())
         finally:
             self._active = False
 

@@ -102,21 +102,3 @@ def test_top_level_property():
     assert f.render() == (
         "package com.example\n\nval primary: Color = Color(0xFF6200EE)\n"
     )
-
-
-def test_file_write(tmp_path):
-    f = KotlinFile(package="com.example")
-    f.import_("androidx.compose.ui.graphics.Color")
-    f.member(
-        KotlinObject("AppColors").property(
-            "primary",
-            type_="Color",
-            value="Color(0xFF6200EE)",
-        ),
-    )
-
-    output = tmp_path / "ui" / "theme" / "Color.kt"
-    f.write(output)
-
-    assert output.exists()
-    assert output.read_text() == f.render()

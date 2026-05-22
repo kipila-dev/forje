@@ -1,6 +1,6 @@
 import pytest
 
-from resforge._utils import atomic_write
+from resforge.io import atomic_write
 
 
 def test_atomic_replace_existing(tmp_path):

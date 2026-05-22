@@ -1,10 +1,12 @@
+import json
 import shutil
+from io import BytesIO
 from pathlib import Path
 from typing import Self, final
 
 from resforge._utils import require_context
+from resforge.io import FileSystemSink, WriteSink
 
-from ._base import write_contents
 from ._colorset import ColorSet
 from .types import AppleColor
 
@@ -21,39 +23,54 @@ class AssetCatalog:
     Example:
         >>> with AssetCatalog("App", "Assets") as assets:
         ...     assets.colorset("primary", "#FF0000")
-
     """
 
-    def __init__(self, path: str | Path, name: str) -> None:
+    def __init__(
+        self,
+        path: str | Path,
+        name: str,
+        sink: WriteSink | None = None,
+    ) -> None:
         """Initializes the AssetCatalog.
 
         Args:
             path: The filesystem path where the asset catalog will be saved.
             name: The name of the catalog (without .xcassets extension).
-
+            sink: The custom output to write data to. If None,
+                defaults to a standard file write.
         """
-        output_dir = Path(path).resolve()
-        self._temp_path = output_dir / f".tmp_{name}.xcassets"
-        self._final_path = output_dir / f"{name}.xcassets"
         self._active = False
+        output_dir = Path(path).resolve()
+        self._final_path = output_dir / f"{name}.xcassets"
+        self._sink = sink or FileSystemSink()
+        self._temp_path = (
+            (output_dir / f".tmp_{name}.xcassets")
+            if isinstance(self._sink, FileSystemSink)
+            else self._final_path
+        )
 
     def __enter__(self) -> Self:
         self._active = True
-        if self._temp_path.exists():
-            shutil.rmtree(self._temp_path)
-        self._temp_path.mkdir(parents=True)
+        if isinstance(self._sink, FileSystemSink):
+            if self._temp_path.exists():
+                shutil.rmtree(self._temp_path)
+            self._temp_path.mkdir(parents=True)
         return self
 
     def __exit__(self, exc_type: type[BaseException] | None, *_: object) -> None:
         try:
             if exc_type is None:
+                buf = BytesIO()
                 contents = {"info": {"author": "xcode", "version": 1}}
-                write_contents(self._temp_path, contents)
-                if self._final_path.exists():
-                    shutil.rmtree(self._final_path)
-                self._temp_path.rename(self._final_path)
+                buf.write(json.dumps(contents, indent=2).encode())
+                path = Path(self._temp_path) / "Contents.json"
+                self._sink.write(path, buf.getvalue())
+                if isinstance(self._sink, FileSystemSink):
+                    if self._final_path.exists():
+                        shutil.rmtree(self._final_path)
+                    self._temp_path.rename(self._final_path)
         finally:
-            if self._temp_path.exists():
+            if isinstance(self._sink, FileSystemSink) and self._temp_path.exists():
                 shutil.rmtree(self._temp_path)
             self._active = False
 
@@ -66,6 +83,6 @@ class AssetCatalog:
             *colors: One or more AppleColor definitions.
 
         """
-        with ColorSet(self._temp_path, name) as colorset:
+        with ColorSet(self._temp_path, name, self._sink) as colorset:
             colorset.color(*colors)
         return self
