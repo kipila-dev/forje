@@ -1,4 +1,4 @@
-from resforge.codegen.kotlin import KotlinFile, KotlinObject, KotlinProperty
+from resforge._codegen.kotlin import KotlinFile, KotlinObject, KotlinProperty
 
 
 def test_property_render():

@@ -4,8 +4,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Self, final, override
 
 from resforge import Color
+from resforge._codegen.kotlin import KotlinFile, KotlinObject
 from resforge._utils import atomic_write, require_context
-from resforge.codegen.kotlin import KotlinFile, KotlinObject
 
 if TYPE_CHECKING:
     from resforge.android.types import Dimension

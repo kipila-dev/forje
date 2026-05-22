@@ -29,10 +29,12 @@ class Appearance(Enum):
 
     @property
     def category(self) -> str:
+        """Appearance category."""
         return self.value[0]
 
     @property
     def setting(self) -> str:
+        """Appearance setting."""
         return self.value[1]
 
 
