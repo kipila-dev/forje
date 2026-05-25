@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 __all__ = ["compile_"]
 
 _DIALECT = starlark.Dialect.extended()
+_DIALECT.enable_f_strings = True
+
 _GLOBALS = starlark.Globals.standard().extended_by(
     [
         starlark.LibraryExtension.EnumType,

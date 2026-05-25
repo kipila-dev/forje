@@ -1,9 +1,11 @@
 import logging
 import time
+from collections.abc import Generator
 from pathlib import Path
 from typing import Annotated
 
 import typer
+from resforge.io import atomic_write
 from rich import print  # noqa: A004
 from rich.logging import RichHandler
 
@@ -79,13 +81,24 @@ def build(
     try:
         env = Environment().load_plugins()
         results = Driver(env).build(source, targets)
-        print(results)
+        for _, _, file_path, file_bytes in _walk_files(results):
+            with atomic_write(file_path) as f:
+                _ = f.write(file_bytes)
     except ForjeError as e:
         error(str(e))
         raise typer.Exit(code=1) from e
 
     elapsed = time.perf_counter() - start
     success(f"Build succeeded in {format_elapsed(elapsed)}")
+
+
+def _walk_files(
+    results: dict[str, dict[str, dict[str, bytes]]],
+) -> Generator[tuple[str, str, str, bytes]]:
+    for target, platforms in results.items():
+        for platform, files in platforms.items():
+            for file_path, file_bytes in files.items():
+                yield target, platform, file_path, file_bytes
 
 
 if __name__ == "__main__":

@@ -33,17 +33,19 @@ def target_add_token(
     type_: str,
     mapping: dict[str, str],
 ) -> None:
-    try:
-        target = ctx.ir.targets[target_id]
-    except LookupError:
-        msg = f"Invalid target: {target_id}"
-        raise ForjeValidationError(msg) from None
-
-    target.tokens[name] = TokenNode(
+    token = TokenNode(
         name=name,
         type_=type_,
         mapping={k: ValueNode(v) for k, v in mapping.items()},
     )
+    with ctx.lock:
+        try:
+            target = ctx.ir.targets[target_id]
+        except LookupError:
+            msg = f"Invalid target: {target_id}"
+            raise ForjeValidationError(msg) from None
+
+        target.tokens[name] = token
 
 
 @stdlib.export(name="_sys_target_add_artifact")
@@ -54,14 +56,14 @@ def target_add_artifact(
     path: str,
     stem: str | None = None,
 ) -> None:
-    try:
-        target = ctx.ir.targets[target_id]
-    except LookupError:
-        msg = f"Invalid target: {target_id}"
-        raise ForjeValidationError(msg) from None
-
     artifact = ArtifactNode(platform=platform, path=path, stem=stem)
-    target.artifacts.append(artifact)
+    with ctx.lock:
+        try:
+            target = ctx.ir.targets[target_id]
+        except LookupError:
+            msg = f"Invalid target: {target_id}"
+            raise ForjeValidationError(msg) from None
+        target.artifacts.append(artifact)
 
 
 @stdlib.export(name="_sys_color_parse_hex")

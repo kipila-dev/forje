@@ -26,7 +26,11 @@ ArtifactType = record(
 )
 
 
-def Color(value, alpha=None, space=ColorSpace.SRGB):
+def Color(
+    value: str,
+    alpha: float | None = None,
+    space: _ColorSpace = ColorSpace.SRGB,
+) -> ColorType:
     if not isinstance(space, _ColorSpace):
         fail("Invalid argument for 'space': expected a ColorSpace enum")
 
@@ -77,10 +81,11 @@ def Token(
     if mapping:
         for k in mapping.keys():
             if k not in _Mapping.values():
-                msg = ("Invalid mapping key '{}'. Supported: {}.").format(
-                    k, ", ".join(_Mapping.values())
+                fail(
+                    "Invalid mapping key '{}'. Supported: {}.".format(
+                        k, ", ".join(_Mapping.values())
+                    )
                 )
-                fail(msg)
 
         return TokenType(
             name=name,

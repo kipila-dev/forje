@@ -56,7 +56,7 @@ myplugin = "myplugin.dsl:myplugin_module"
 
 ```toml
 [project.entry-points."forje.backend"]
-myplugin = "myplugin.backend.myplatform:MyPlatformBackend"
+myplatform = "myplugin.backend.myplatform:MyPlatformBackend"
 ```
 
 ## License

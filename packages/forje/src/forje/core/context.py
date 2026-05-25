@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
-from threading import Lock
+from threading import RLock
 from typing import TYPE_CHECKING, final, override
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ _ctx: ContextVar[Context] = ContextVar("ctx")
 @dataclass
 class Context:
     ir: IR
-    lock: Lock = field(init=False, default_factory=Lock)
+    lock: RLock = field(init=False, default_factory=RLock)
 
 
 class _ContextProxy:
