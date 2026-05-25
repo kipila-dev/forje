@@ -40,7 +40,7 @@ class AssetCatalog:
                 defaults to a standard file write.
         """
         self._active = False
-        output_dir = Path(path).resolve()
+        output_dir = Path(path)
         self._final_path = output_dir / f"{name}.xcassets"
         self._sink = sink or FileSystemSink()
         self._temp_path = (

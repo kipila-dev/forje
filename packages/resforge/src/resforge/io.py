@@ -10,7 +10,7 @@ __all__ = ["FileSystemSink", "MemorySink", "WriteSink", "atomic_write"]
 
 
 @contextmanager
-def atomic_write(target_path: Path) -> Generator[IO[bytes], None, None]:
+def atomic_write(target_path: str | Path) -> Generator[IO[bytes], None, None]:
     """Yields a temporary file, then atomically replaces target_path on success.
 
     Preserves file permissions of target_path, if target_path already exists.
