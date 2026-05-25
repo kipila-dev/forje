@@ -9,17 +9,18 @@ language used by Bazel and Buck2.
 ```starlark
 # build.forje
 target(
-    id = "acme",
-    tokens = [
+    id="acme",
+    tokens=[
         Token("primary", Color("#38BDF8")),
-        Token("surface",
-            dark = Color("#0F172A"),
-            light = Color("#FFFFFF"),
+        Token(
+            "surface",
+            dark=Color("#0F172A"),
+            light=Color("#FFFFFF"),
         ),
     ],
-    artifacts = [
-        Artifact(platform = "android", path = "acme/res"),
-        Artifact(platform = "apple", path = "acme", stem = "Assets"),
+    artifacts=[
+        Artifact("android", "acme/res"),
+        Artifact("apple", "acme", stem="Assets"),
     ],
 )
 ```

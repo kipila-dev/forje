@@ -1,3 +1,4 @@
+import typing
 from dataclasses import dataclass, field
 
 __all__ = ["IR", "ArtifactNode", "TargetNode", "TokenNode", "ValueNode"]
@@ -6,7 +7,7 @@ __all__ = ["IR", "ArtifactNode", "TargetNode", "TokenNode", "ValueNode"]
 @dataclass
 class ValueNode:
     value: object
-    origin: dict[str, object] = field(default_factory=dict)
+    origin: dict[str, dict[str, typing.Any]] = field(default_factory=dict)
 
 
 @dataclass

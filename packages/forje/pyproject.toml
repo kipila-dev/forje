@@ -12,12 +12,6 @@ license = { text = "MIT" }
 authors = [{ name = "Kipila Ltd", email = "hello@kipila.dev" }]
 dependencies = ["resforge", "starlark-pyo3", "typer"]
 
-[tool.hatch.version]
-path = "src/forje/__init__.py"
-
-[tool.hatch.envs.default]
-dependencies = ["ruff", "basedpyright", "pytest"]
-
 [project.scripts]
 forje = "forje.cli.main:app"
 
@@ -27,12 +21,18 @@ stdlib = "forje.dsl.stdlib:stdlib"
 [project.entry-points."forje.backend"]
 android = "forje.backend.android:Android"
 
+[tool.hatch.version]
+path = "src/forje/__init__.py"
+
+[tool.hatch.envs.default]
+dependencies = ["basedpyright", "pytest", "ruff"]
+
 [tool.ruff]
 target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D100", "D104", "D105", "ANN401", "PLR2004"]
+ignore = ["D100", "D104", "D105", "D107", "ANN401", "PLR2004"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"

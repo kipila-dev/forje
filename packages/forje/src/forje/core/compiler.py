@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 __all__ = ["compile_"]
 
+_DIALECT = starlark.Dialect.extended()
 _GLOBALS = starlark.Globals.standard().extended_by(
     [
         starlark.LibraryExtension.EnumType,
@@ -82,7 +83,7 @@ def _parse_and_eval(
     loader: Callable[..., starlark.FrozenModule],
 ) -> None:
     try:
-        ast = starlark.parse(name, source)
+        ast = starlark.parse(name, source, dialect=_DIALECT)
     except starlark.StarlarkError as e:
         raise ForjeParseError(str(e)) from e
 

@@ -219,3 +219,5 @@ __marimo__/
 
 # Forje build files
 *.forje
+
+.DS_Store

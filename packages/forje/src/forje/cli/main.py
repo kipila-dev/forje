@@ -55,7 +55,12 @@ def main(
 
 
 @app.command()
-def build() -> None:
+def build(
+    targets: Annotated[
+        list[str] | None,
+        typer.Option("--target", help="Target to build."),
+    ] = None,
+) -> None:
     """Build design system resources."""
     build_file = _find_build_file()
 
@@ -73,7 +78,8 @@ def build() -> None:
 
     try:
         env = Environment().load_plugins()
-        Driver(env).build(source)
+        results = Driver(env).build(source, targets)
+        print(results)
     except ForjeError as e:
         error(str(e))
         raise typer.Exit(code=1) from e
