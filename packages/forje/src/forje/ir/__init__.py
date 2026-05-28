@@ -1,3 +1,3 @@
-from .models import IR, ArtifactNode, TargetNode, TokenNode, ValueNode
+from .models import IR, ArtifactNode, TargetNode, TokenNode
 
-__all__ = ["IR", "ArtifactNode", "TargetNode", "TokenNode", "ValueNode"]
+__all__ = ["IR", "ArtifactNode", "TargetNode", "TokenNode"]

@@ -1,18 +1,23 @@
 import re
 
-from forje.core import Context
+from pydantic import TypeAdapter
+
+from forje.core.context import Context
+from forje.core.errors import ForjeValidationError
 from forje.dsl import Module
-from forje.errors import ForjeValidationError
-from forje.ir import ArtifactNode, TargetNode, TokenNode, ValueNode
+from forje.ir import ArtifactNode, TargetNode, TokenNode
 
 __all__ = ["stdlib"]
 
-_HEX_COLOR_RE = re.compile(r"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})")
 
 stdlib = Module(name=None).export_starlark(
     package=__name__,
     resource_name="stdlib.star",
 )
+
+_hex_color_re = re.compile(r"#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})")
+_token_adapter = TypeAdapter(TokenNode)
+_artifact_adapter = TypeAdapter(ArtifactNode)
 
 
 @stdlib.export(name="_sys_create_target")
@@ -29,46 +34,37 @@ def create_target(ctx: Context, id_: str) -> None:
 def target_add_token(
     ctx: Context,
     target_id: str,
-    name: str,
-    type_: str,
-    mapping: dict[str, str],
+    token: dict[str, object],
 ) -> None:
-    token = TokenNode(
-        name=name,
-        type_=type_,
-        mapping={k: ValueNode(v) for k, v in mapping.items()},
-    )
+    parsed = _token_adapter.validate_python(token)
     with ctx.lock:
         try:
             target = ctx.ir.targets[target_id]
         except LookupError:
             msg = f"Invalid target: {target_id}"
             raise ForjeValidationError(msg) from None
-
-        target.tokens[name] = token
+        target.tokens[parsed.name] = parsed
 
 
 @stdlib.export(name="_sys_target_add_artifact")
 def target_add_artifact(
     ctx: Context,
     target_id: str,
-    platform: str,
-    path: str,
-    stem: str | None = None,
+    artifact: dict[str, object],
 ) -> None:
-    artifact = ArtifactNode(platform=platform, path=path, stem=stem)
+    parsed = _artifact_adapter.validate_python(artifact)
     with ctx.lock:
         try:
             target = ctx.ir.targets[target_id]
         except LookupError:
             msg = f"Invalid target: {target_id}"
             raise ForjeValidationError(msg) from None
-        target.artifacts.append(artifact)
+        target.artifacts.append(parsed)
 
 
 @stdlib.export(name="_sys_color_parse_hex")
 def color_parse_hex(value: str) -> tuple[float, float, float, float]:
-    if not _HEX_COLOR_RE.fullmatch(value):
+    if not _hex_color_re.fullmatch(value):
         msg = f"Invalid hex color: {value!r}"
         raise ValueError(msg)
 

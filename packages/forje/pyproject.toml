@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Kipila Ltd", email = "hello@kipila.dev" }]
-dependencies = ["resforge", "starlark-pyo3", "typer"]
+dependencies = ["pydantic", "resforge", "starlark-pyo3", "typer"]
 
 [project.scripts]
 forje = "forje.cli.main:app"
@@ -37,7 +37,11 @@ ignore = ["D100", "D104", "D105", "D107", "ANN401", "PLR2004"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.basedpyright]
 include = ["src"]
 typeCheckingMode = "recommended"
 pythonVersion = "3.12"
+reportUnusedCallResult = "none"

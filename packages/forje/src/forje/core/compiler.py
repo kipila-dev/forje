@@ -4,9 +4,8 @@ from typing import TYPE_CHECKING
 
 import starlark
 
-from forje.core import Context
-from forje.core.context import context_proxy
-from forje.errors import ForjeEvalError, ForjeParseError
+from forje.core.context import Context, context_proxy
+from forje.core.errors import ForjeEvalError, ForjeParseError
 from forje.ir import IR
 
 if TYPE_CHECKING:
@@ -43,6 +42,7 @@ def _build_module(
     into: starlark.Module | None = None,
 ) -> starlark.Module | starlark.FrozenModule:
     mod = starlark.Module() if into is None else into
+
     for name, value in module.python.items():
         if callable(value):
             mod.add_callable(name, value)
@@ -67,7 +67,7 @@ def _build_dsl(
             return modules[name]
         raise FileNotFoundError
 
-    for module in env.modules:
+    for module in env.dsl_modules:
         if module.name is None:
             _ = _build_module(module, loader, into=default_module)
         else:
@@ -112,7 +112,7 @@ def compile_(env: Environment, source: str) -> IR:
 
     try:
         module, loader = _build_dsl(env)
-        _parse_and_eval("build.forje", source + "\n\nNone", module, loader)
+        _parse_and_eval("build.forje", source, module, loader)
         return ctx.ir
     finally:
         context_proxy.reset_context(token)

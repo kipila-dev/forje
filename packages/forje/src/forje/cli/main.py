@@ -12,9 +12,13 @@ from rich.logging import RichHandler
 from forje import __version__
 from forje.cli.ui import error, success
 from forje.cli.utils import format_elapsed
+from forje.core.driver import Driver, Pass
 from forje.core.environment import Environment
-from forje.driver import Driver
-from forje.errors import ForjeError
+from forje.core.errors import ForjeError
+from forje.core.loader import load_plugins
+from forje.passes.codegen import Codegen
+from forje.passes.color_norm import ColorCanonicalizer
+from forje.passes.validation import PlatformSupport, TargetFilter
 
 logging.basicConfig(
     level=logging.INFO,
@@ -79,9 +83,19 @@ def build(
     start = time.perf_counter()
 
     try:
-        env = Environment().load_plugins()
-        results = Driver(env).build(source, targets)
-        for _, _, file_path, file_bytes in _walk_files(results):
+        dsl_modules, backends = load_plugins()
+        env = Environment(dsl_modules, backends)
+
+        pipeline: list[Pass] = [
+            TargetFilter(targets),
+            PlatformSupport(env),
+            ColorCanonicalizer(),
+            Codegen(env),
+        ]
+
+        outputs = Driver(env).build(source, pipeline)
+
+        for _, _, file_path, file_bytes in _walk_files(outputs):
             with atomic_write(file_path) as f:
                 _ = f.write(file_bytes)
     except ForjeError as e:
