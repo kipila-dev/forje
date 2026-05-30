@@ -78,11 +78,18 @@ Plugins expose new DSL functions and backends via Python entry points.
 myplugin = "myplugin.dsl:myplugin_module"
 ```
 
+**New compiler pass:**
+
+```toml
+[project.entry-points."forje.pass"]
+myplugin = "myplugin.passes:MyValidation"
+```
+
 **New platform backend:**
 
 ```toml
 [project.entry-points."forje.backend"]
-myplatform = "myplugin.backend.myplatform:MyPlatformBackend"
+myplatform = "myplugin.backend:MyPlatformBackend"
 ```
 
 ## License
