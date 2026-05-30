@@ -65,7 +65,7 @@ target(
 ```
 
 If `text` fails to meet the AA contrast ratio against `surface` during the
-compile step, Forje will halt the build and throw a validation error.
+compile step, Forje will raise a validation error.
 
 ## Extending Forje
 
@@ -91,6 +91,8 @@ myplugin = "myplugin.passes:MyValidation"
 [project.entry-points."forje.backend"]
 myplatform = "myplugin.backend:MyPlatformBackend"
 ```
+
+For a reference plugin implementation, see the built-in `forje.wcag` module.
 
 ## License
 

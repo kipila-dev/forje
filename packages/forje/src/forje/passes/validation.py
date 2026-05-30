@@ -11,15 +11,16 @@ __all__ = ["PlatformSupport", "TargetFilter"]
 @final
 class TargetFilter(Pass):
     def __init__(self, active_targets: list[str] | None = None) -> None:
-        self._active_targets = set(active_targets or [])
+        self._active_targets = active_targets or []
 
     @override
     def run(self, ir: IR) -> None:
         if self._active_targets:
-            all_targets = {t.id for t in ir.targets.values()}
-            unknown_targets = sorted(self._active_targets - all_targets)
+            all_targets = [t.id for t in ir.targets.values()]
+            unknown_targets = [t for t in self._active_targets if t not in all_targets]
             if unknown_targets:
-                msg = f"Unknown target: {', '.join(unknown_targets)}"
+                noun = "target" if len(unknown_targets) == 1 else "targets"
+                msg = f"Unknown {noun}: {', '.join(unknown_targets)}"
                 raise ForjeError(msg)
 
             ir.targets = {

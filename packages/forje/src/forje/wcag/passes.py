@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from forje.core.driver import Pass
 from forje.core.errors import ForjeValidationError
-from forje.ir import IR, ColorNode, TokenMapping, TokenNode
+from forje.ir import IR, ColorNode, TargetNode, TokenMapping, TokenNode
 from forje.passes.color_norm import normalize_token_node
 from forje.wcag.models import AgainstNode, Level, Role, against_adapter
 
@@ -33,12 +33,14 @@ def _resolve_wcag_nodes(context: list[object]) -> Generator[AgainstNode]:
             continue
 
 
-def _walk_wcag_tokens(ir: IR) -> Generator[tuple[TokenNode, list[AgainstNode]]]:
+def _walk_wcag_tokens(
+    ir: IR,
+) -> Generator[tuple[TargetNode, TokenNode, list[AgainstNode]]]:
     for target in ir.targets.values():
         for token in target.tokens.values():
             wcag_nodes = list(_resolve_wcag_nodes(token.context))
             if wcag_nodes:
-                yield token, wcag_nodes
+                yield target, token, wcag_nodes
 
 
 def _expand_mapping(
@@ -59,6 +61,7 @@ def _make_coloraide_color(node: ColorNode) -> coloraide.Color:
 
 
 def _validate_contrast(
+    target: TargetNode,
     token: TokenNode,
     against: AgainstNode,
 ) -> list[ForjeValidationError]:
@@ -78,7 +81,7 @@ def _validate_contrast(
 
         if contrast_ratio < required_contrast:
             msg = (
-                f"WCAG {against.level.upper()} contrast failure "
+                f"{target.id}: WCAG {against.level.upper()} contrast failure "
                 f"({against.role}, {variant}): "
                 f"'{token.name}' vs '{against.token.name}' "
                 f"is {contrast_ratio:.2f}:1, requires ≥ {required_contrast:.1f}:1"
@@ -93,9 +96,9 @@ class WCAGValidation(Pass):
     def run(self, ir: IR) -> None:
         errors: list[ForjeValidationError] = []
 
-        for token, wcag_nodes in _walk_wcag_tokens(ir):
+        for target, token, wcag_nodes in _walk_wcag_tokens(ir):
             for node in wcag_nodes:
-                errors.extend(_validate_contrast(token, node))
+                errors.extend(_validate_contrast(target, token, node))
 
         if errors:
             msg = "WCAG validation failed"

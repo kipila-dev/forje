@@ -40,11 +40,6 @@ class Driver:
         ir = evaluate(self._env, source)
 
         for pass_ in pipeline or []:
-            try:
-                pass_.run(ir)
-            except* Exception as eg:
-                for e in eg.exceptions:
-                    e.add_note(f"[{pass_.__class__.__name__}]")
-                raise
+            pass_.run(ir)
 
         return ir.outputs
