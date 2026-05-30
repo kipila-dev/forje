@@ -6,10 +6,10 @@ from forje.core.driver import Pass
 from forje.ir import IR, TokenNode
 from forje.ir.models import ColorNode
 
-__all__ = ["ColorCanonicalizer"]
+__all__ = ["ColorCanonicalizer", "normalize_color_node", "normalize_token_node"]
 
 
-def _normalize_color_node(node: ColorNode) -> ColorNode:
+def normalize_color_node(node: ColorNode) -> ColorNode:
     if node.space == "xyz-d65":
         return node
 
@@ -29,11 +29,9 @@ def _normalize_color_node(node: ColorNode) -> ColorNode:
     )
 
 
-def _normalize_token_node(node: TokenNode) -> TokenNode:
+def normalize_token_node(node: TokenNode) -> TokenNode:
     for mode, color in node.mapping.items():
-        node.mapping[mode] = _normalize_color_node(color)
-    if node.on:
-        node.on = _normalize_token_node(node.on)
+        node.mapping[mode] = normalize_color_node(color)
     return node
 
 
@@ -45,4 +43,4 @@ class ColorCanonicalizer(Pass):
     def run(self, ir: IR) -> None:
         for target in ir.targets.values():
             for name, token in target.tokens.items():
-                target.tokens[name] = _normalize_token_node(token)
+                target.tokens[name] = normalize_token_node(token)

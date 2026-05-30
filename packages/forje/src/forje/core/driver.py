@@ -12,6 +12,11 @@ if TYPE_CHECKING:
 __all__ = ["Driver", "Pass"]
 
 
+def _wrap_error(e: BaseException, pass_name: str) -> ForjeError:
+    msg = f"{e} [{pass_name}]"
+    return ForjeError(msg)
+
+
 @runtime_checkable
 class Pass(Protocol):
     """A compiler pass.
@@ -43,8 +48,9 @@ class Driver:
         for pass_ in pipeline or []:
             try:
                 pass_.run(ir)
-            except Exception as e:
-                msg = f"{e} [{pass_.__class__.__name__}]"
-                raise ForjeError(msg) from e
+            except* Exception as eg:
+                for e in eg.exceptions:
+                    e.add_note(f"[{pass_.__class__.__name__}]")
+                raise
 
         return ir.outputs

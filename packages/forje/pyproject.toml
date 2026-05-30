@@ -10,13 +10,18 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Kipila Ltd", email = "hello@kipila.dev" }]
-dependencies = ["pydantic", "resforge", "starlark-pyo3", "typer"]
+dependencies = ["coloraide", "pydantic", "resforge", "starlark-pyo3", "typer"]
 
 [project.scripts]
 forje = "forje.cli.main:app"
 
 [project.entry-points."forje.dsl"]
-stdlib = "forje.dsl.stdlib:stdlib"
+core = "forje.dsl.core:module"
+stdlib = "forje.dsl.stdlib:module"
+wcag = "forje.wcag.dsl:module"
+
+[project.entry-points."forje.pass"]
+wcag = "forje.wcag.passes:WCAGValidation"
 
 [project.entry-points."forje.backend"]
 android = "forje.backend.android:Android"

@@ -1,13 +1,14 @@
 import importlib.metadata
 
 from forje.backend import Backend
+from forje.core.driver import Pass
 from forje.core.errors import ForjePluginLoadError
 from forje.dsl import Module
 
 __all__ = ["load_plugins"]
 
 
-def load_plugins() -> tuple[list[Module], dict[str, Backend]]:
+def load_plugins() -> tuple[list[Module], list[Pass], dict[str, Backend]]:
     """Discovers and loads all registered Forje DSL modules and backends.
 
     Returns:
@@ -32,6 +33,20 @@ def load_plugins() -> tuple[list[Module], dict[str, Backend]]:
 
         dsl_modules.append(module)
 
+    passes: list[Pass] = []
+    for ep in importlib.metadata.entry_points(group="forje.pass"):
+        try:
+            pass_ = ep.load()()  # pyright: ignore[reportAny]
+        except Exception as e:
+            msg = f"Failed to resolve entry point for compiler pass '{ep.name}': {e}"
+            raise ForjePluginLoadError(msg) from e
+
+        if not isinstance(pass_, Pass):
+            msg = f"Invalid plugin '{ep.name}': must resolve to a Pass instance"
+            raise ForjePluginLoadError(msg)
+
+        passes.append(pass_)
+
     backends: dict[str, Backend] = {}
     for ep in importlib.metadata.entry_points(group="forje.backend"):
         try:
@@ -46,4 +61,4 @@ def load_plugins() -> tuple[list[Module], dict[str, Backend]]:
 
         backends[ep.name] = backend
 
-    return dsl_modules, backends
+    return dsl_modules, passes, backends

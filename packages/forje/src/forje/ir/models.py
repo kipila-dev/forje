@@ -11,12 +11,14 @@ __all__ = [
     "ColorNode",
     "ColorSpace",
     "TargetNode",
+    "TokenMapping",
     "TokenNode",
 ]
 
 
 ColorSpace = Literal["oklch", "p3", "srgb", "xyz-d65"]
 TokenKind = Literal["color"]
+TokenMapping = Literal["dark", "light", "high_contrast_dark", "high_contrast_light"]
 
 
 @dataclass
@@ -30,8 +32,8 @@ class ColorNode:
 class TokenNode:
     name: str
     kind: TokenKind
-    on: TokenNode | None = None
-    mapping: dict[str, ColorNode] = Field(default_factory=dict)
+    context: list[object]
+    mapping: dict[TokenMapping, ColorNode] = Field(default_factory=dict)
 
 
 @dataclass

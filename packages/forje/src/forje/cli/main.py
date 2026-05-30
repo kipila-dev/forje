@@ -83,13 +83,14 @@ def build(
     start = time.perf_counter()
 
     try:
-        dsl_modules, backends = load_plugins()
+        dsl_modules, passes, backends = load_plugins()
         env = Environment(dsl_modules, backends)
 
         pipeline: list[Pass] = [
             TargetFilter(targets),
             PlatformSupport(env),
             ColorCanonicalizer(),
+            *passes,
             Codegen(env),
         ]
 
@@ -98,9 +99,11 @@ def build(
         for _, _, file_path, file_bytes in _walk_files(outputs):
             with atomic_write(file_path) as f:
                 _ = f.write(file_bytes)
-    except ForjeError as e:
-        error(str(e))
-        raise typer.Exit(code=1) from e
+    except* ForjeError as eg:
+        for e in eg.exceptions:
+            notes = " ".join(getattr(e, "__notes__", []))
+            error(f"{e} {notes}".strip())
+        raise typer.Exit(code=1) from eg
 
     elapsed = time.perf_counter() - start
     success(f"Build succeeded in {format_elapsed(elapsed)}")
