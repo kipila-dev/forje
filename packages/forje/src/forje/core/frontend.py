@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from forje.core.environment import Environment
     from forje.dsl.module import Module
 
-__all__ = ["compile_"]
+__all__ = ["evaluate"]
 
 _DIALECT = starlark.Dialect.extended()
 _DIALECT.enable_f_strings = True
@@ -95,7 +95,7 @@ def _parse_and_eval(
         raise ForjeEvalError(str(e)) from e
 
 
-def compile_(env: Environment, source: str) -> IR:
+def evaluate(env: Environment, source: str) -> IR:
     """Evaluate a Forje build script.
 
     Args:

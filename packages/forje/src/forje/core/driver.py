@@ -2,19 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Protocol, final, runtime_checkable
 
-from forje.core.compiler import compile_
-from forje.core.errors import ForjeError
+from forje.core.frontend import evaluate
 
 if TYPE_CHECKING:
     from forje.core.environment import Environment
     from forje.ir import IR
 
 __all__ = ["Driver", "Pass"]
-
-
-def _wrap_error(e: BaseException, pass_name: str) -> ForjeError:
-    msg = f"{e} [{pass_name}]"
-    return ForjeError(msg)
 
 
 @runtime_checkable
@@ -43,7 +37,7 @@ class Driver:
         pipeline: list[Pass] | None = None,
     ) -> dict[str, dict[str, dict[str, bytes]]]:
         """Compiles Starlark source and runs the pipeline."""
-        ir = compile_(self._env, source)
+        ir = evaluate(self._env, source)
 
         for pass_ in pipeline or []:
             try:
