@@ -1,14 +1,16 @@
 from pathlib import Path
+from typing import override
 
 from resforge import Color
 from resforge.android import ValuesWriter
 from resforge.io import MemorySink
 
+from forje.backend import Backend
 from forje.ir import ArtifactNode, TargetNode
 from forje.ir.models import ColorNode
 
 
-class Android:
+class Android(Backend):
     def _write_tokens(
         self,
         sink: MemorySink,
@@ -27,6 +29,7 @@ class Android:
         with ValuesWriter(path, sink) as res:
             res.color(**colors)
 
+    @override
     def codegen(self, target: TargetNode, artifact: ArtifactNode) -> dict[str, bytes]:
         colors = [token for token in target.tokens.values() if token.kind == "color"]
         light = [

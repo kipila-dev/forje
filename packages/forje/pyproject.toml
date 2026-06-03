@@ -25,6 +25,7 @@ wcag = "forje.wcag.passes:WCAGValidation"
 
 [project.entry-points."forje.backend"]
 android = "forje.backend.android:Android"
+apple = "forje.backend.apple:Apple"
 
 [tool.hatch.version]
 path = "src/forje/__init__.py"
