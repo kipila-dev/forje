@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from typing import override
+from typing import final, override
 
 import coloraide
 from pydantic import ValidationError
@@ -91,6 +91,7 @@ def _validate_contrast(
     return errors
 
 
+@final
 class WCAGValidation(Pass):
     @override
     def run(self, ir: IR) -> None:

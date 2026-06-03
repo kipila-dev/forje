@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import override
+from typing import final, override
 
 from resforge import Color
 from resforge.android import ValuesWriter
@@ -10,6 +10,7 @@ from forje.ir import ArtifactNode, TargetNode
 from forje.ir.models import ColorNode
 
 
+@final
 class Android(Backend):
     def _write_tokens(
         self,

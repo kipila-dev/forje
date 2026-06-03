@@ -24,9 +24,9 @@ class _ContextProxy:
     def __getattr__(self, name: str) -> object:
         try:
             return getattr(_ctx.get(), name)  # pyright: ignore[reportAny]
-        except LookupError:
+        except LookupError as e:
             msg = "No build context active."
-            raise RuntimeError(msg) from LookupError
+            raise RuntimeError(msg) from e
 
     @override
     def __repr__(self) -> str:

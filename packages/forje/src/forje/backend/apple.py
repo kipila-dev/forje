@@ -1,5 +1,5 @@
 import re
-from typing import override
+from typing import final, override
 
 from resforge import Color
 from resforge.apple import Appearance, AppleColor, AssetCatalog
@@ -30,6 +30,7 @@ def _to_color(node: ColorNode) -> Color:
     )
 
 
+@final
 class Apple(Backend):
     @override
     def codegen(self, target: TargetNode, artifact: ArtifactNode) -> dict[str, bytes]:
