@@ -27,6 +27,10 @@ class TargetFilter(Pass):
                 k: v for k, v in ir.targets.items() if k in self._active_targets
             }
 
+        if not ir.targets:
+            msg = "No targets defined in the build configuration"
+            raise ForjeError(msg)
+
 
 @final
 class PlatformSupport(Pass):
@@ -43,4 +47,4 @@ class PlatformSupport(Pass):
         if unknown_platforms:
             platforms = ", ".join(f"'{p}'" for p in sorted(unknown_platforms))
             msg = f"No backend registered for platforms: {platforms}"
-            raise ForjeError(msg) from None
+            raise ForjeError(msg)

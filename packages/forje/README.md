@@ -69,7 +69,8 @@ compile step, Forje will raise a validation error.
 
 ## Extending Forje
 
-Plugins expose new DSL functions and backends via Python entry points.
+Plugins expose new DSL functions, compiler passes and backends via Python entry
+points.
 
 **New DSL extension:**
 
