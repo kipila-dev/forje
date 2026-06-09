@@ -16,7 +16,8 @@ def require_context[T: _HasActiveContext, **P, R](
     """Ensures a method is only called within an active context.
 
     Raises:
-        RuntimeError: If the method is called while the instance's `_active` attribute is False.
+        RuntimeError: If the method is called while the instance's
+            `_active` attribute is False.
 
     """
 
