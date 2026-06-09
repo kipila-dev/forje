@@ -14,7 +14,7 @@ design tokens.
 
 ## Installation
 
-```bash
+```sh
 pip install resforge
 ```
 
@@ -58,12 +58,10 @@ with ValuesWriter("res/values/resources.xml") as res:
     res.string(
         app_name="My App",
         welcome_message="Welcome!",
-    )
-    res.color(
+    ).color(
         primary="#6200EE",
         secondary="#03DAC5",
-    )
-    res.dimension(
+    ).dimension(
         padding_small=dp(8),
         text_body=sp(16),
     )

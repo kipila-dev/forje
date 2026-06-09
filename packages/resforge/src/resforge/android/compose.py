@@ -40,7 +40,7 @@ class _BaseComposeScope:
 
     def _to_compose_color_literal(self, color: Color) -> str:
         if color.in_srgb_gamut():
-            return f"Color({color.to_srgb_argb_hex(prefix="0x")})"
+            return f"Color({color.to_srgb_argb_hex(prefix='0x')})"
 
         self._ctx.add_imports("androidx.compose.ui.graphics.colorspace.ColorSpaces")
         r, g, b, a = color.to_p3_components()
@@ -106,10 +106,10 @@ class ComposeWriter(_BaseComposeScope):
 
     Example:
         >>> with ComposeWriter(
-                "ui/theme/Color.kt",
-                package="com.example.theme",
-                object_name="AppColors"
-            ) as compose:
+        ...     "ui/theme/Color.kt",
+        ...     package="com.example.theme",
+        ...     object_name="AppColors",
+        ... ) as compose:
         ...     compose.color(primary="#6200EE", background="#FFFFFF")
     """
 

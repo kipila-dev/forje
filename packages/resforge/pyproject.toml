@@ -64,6 +64,9 @@ ignore = ["D100", "D104", "D105", "D107", "ANN401", "PLR2004", "E741"]
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.basedpyright]
 include = ["src"]
 typeCheckingMode = "recommended"
