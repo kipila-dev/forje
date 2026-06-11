@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 from defusedxml.ElementTree import parse
-
 from resforge import Color
 from resforge.android import PluralValues, ValuesWriter, dp, em, inch, mm, pt, px, sp
 
@@ -46,7 +45,7 @@ class TestDimensionType:
 
 
 @pytest.fixture
-def xml_path(tmp_path) -> Path:
+def xml_path(tmp_path: Path) -> Path:
     return tmp_path / "res" / "values" / "test.xml"
 
 

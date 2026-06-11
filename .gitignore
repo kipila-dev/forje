@@ -220,4 +220,5 @@ __marimo__/
 # Forje build files
 *.forje
 
+# macOS
 .DS_Store

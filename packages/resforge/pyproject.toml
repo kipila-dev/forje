@@ -34,41 +34,10 @@ dependencies = ["coloraide"]
 
 [project.urls]
 Homepage = "https://kipila.dev"
-Repository = "https://github.com/kipila-dev/resforge"
+Repository = "https://github.com/kipila-dev/forje"
+
+[dependency-groups]
+dev = ["defusedxml"]
 
 [tool.hatch.version]
 path = "src/resforge/__init__.py"
-
-[tool.hatch.envs.default]
-dependencies = ["basedpyright", "defusedxml", "pytest", "ruff"]
-
-[tool.ruff]
-target-version = "py312"
-
-[tool.ruff.lint]
-select = ["ALL"]
-ignore = ["D100", "D104", "D105", "D107", "ANN401", "PLR2004", "E741"]
-
-[tool.ruff.lint.extend-per-file-ignores]
-"tests/**/*.py" = [
-  "ANN001",
-  "ANN201",
-  "D101",
-  "D102",
-  "D103",
-  "EM101",
-  "S101",
-  "TRY301",
-]
-
-[tool.ruff.lint.pydocstyle]
-convention = "google"
-
-[tool.ruff.format]
-docstring-code-format = true
-
-[tool.basedpyright]
-include = ["src"]
-typeCheckingMode = "recommended"
-pythonVersion = "3.12"
-reportUnusedCallResult = "none"
