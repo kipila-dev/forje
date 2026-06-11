@@ -10,6 +10,11 @@ __all__ = ["PlatformSupport", "TargetFilter"]
 
 @final
 class TargetFilter(Pass):
+    """Restricts the active targets to the specified subset.
+
+    If no targets are provided, all targets are kept.
+    """
+
     def __init__(self, active_targets: list[str] | None = None) -> None:
         self._active_targets = active_targets or []
 
@@ -34,6 +39,8 @@ class TargetFilter(Pass):
 
 @final
 class PlatformSupport(Pass):
+    """Verifies that every artifact platform has a registered backend."""
+
     def __init__(self, env: Environment) -> None:
         self._env = env
 

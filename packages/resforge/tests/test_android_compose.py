@@ -1,9 +1,10 @@
-import pytest
+from pathlib import Path
 
+import pytest
 from resforge.android import ComposeWriter, Dimension, dp, sp
 
 
-def test_object_colors(tmp_path):
+def test_object_colors(tmp_path: Path):
     output = tmp_path / "AppColors.kt"
     with (
         ComposeWriter(output, package="com.example.theme") as compose,
@@ -23,7 +24,7 @@ def test_object_colors(tmp_path):
     )
 
 
-def test_top_level_dimension(tmp_path):
+def test_top_level_dimension(tmp_path: Path):
     output = tmp_path / "Dimens.kt"
     with ComposeWriter(output, package="com.example.theme") as compose:
         compose.dimension(paddingSmall=dp(8), textBody=sp(16))
@@ -41,7 +42,7 @@ def test_top_level_dimension(tmp_path):
     )
 
 
-def test_mixed_top_level_and_object(tmp_path):
+def test_mixed_top_level_and_object(tmp_path: Path):
     output = tmp_path / "Theme.kt"
     with ComposeWriter(output, package="com.example.theme") as compose:
         compose.dimension(border=dp(8))
@@ -64,7 +65,7 @@ def test_mixed_top_level_and_object(tmp_path):
     )
 
 
-def test_multiple_objects(tmp_path):
+def test_multiple_objects(tmp_path: Path):
     output = tmp_path / "Theme.kt"
     with ComposeWriter(output, package="com.example.theme") as compose:
         with compose.object_("AppColors") as colors:
@@ -78,7 +79,7 @@ def test_multiple_objects(tmp_path):
     assert rendered.index("AppColors") < rendered.index("AppDimens")
 
 
-def test_object_require_context_raises(tmp_path):
+def test_object_require_context_raises(tmp_path: Path):
     output = tmp_path / "Color.kt"
     with ComposeWriter(output, package="com.example.theme") as compose:
         scope = compose.object_("AppColors")
@@ -87,7 +88,7 @@ def test_object_require_context_raises(tmp_path):
         scope.color(primary="#6200EE")
 
 
-def test_no_write_on_exception(tmp_path):
+def test_no_write_on_exception(tmp_path: Path):
     output = tmp_path / "Color.kt"
     with (
         pytest.raises(RuntimeError),
@@ -104,7 +105,7 @@ def test_require_context_raises():
         compose.color(primary="#6200EE")
 
 
-def test_creates_parent_directories(tmp_path):
+def test_creates_parent_directories(tmp_path: Path):
     output = tmp_path / "ui" / "theme" / "Color.kt"
     with ComposeWriter(output, package="com.example.theme") as compose:
         compose.color(primary="#6200EE")
@@ -112,7 +113,7 @@ def test_creates_parent_directories(tmp_path):
     assert output.exists()
 
 
-def test_package_is_configurable(tmp_path):
+def test_package_is_configurable(tmp_path: Path):
     output = tmp_path / "Color.kt"
     with ComposeWriter(output, package="dev.kipila.example") as compose:
         compose.color(primary="#6200EE")
@@ -120,7 +121,7 @@ def test_package_is_configurable(tmp_path):
     assert "package dev.kipila.example" in output.read_text()
 
 
-def test_unsupported_dimension_unit_raises(tmp_path):
+def test_unsupported_dimension_unit_raises(tmp_path: Path):
     output = tmp_path / "Color.kt"
 
     with (

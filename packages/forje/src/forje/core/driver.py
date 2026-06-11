@@ -36,7 +36,15 @@ class Driver:
         source: str,
         pipeline: list[Pass] | None = None,
     ) -> dict[str, dict[str, dict[str, bytes]]]:
-        """Compiles Starlark source and runs the pipeline."""
+        """Evaluates the build script and runs the pass pipeline.
+
+        Args:
+            source: Contents of a build.forje file.
+            pipeline: Ordered list of passes to execute. Defaults to empty.
+
+        Returns:
+            Nested dict keyed by target id -> platform -> file path -> bytes.
+        """
         ir = evaluate(self._env, source)
 
         for pass_ in pipeline or []:

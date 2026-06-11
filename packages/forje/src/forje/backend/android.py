@@ -12,6 +12,8 @@ from forje.ir.models import ColorNode
 
 @final
 class Android(Backend):
+    """Generates Android XML resource files for colors from design tokens."""
+
     def _write_tokens(
         self,
         sink: MemorySink,

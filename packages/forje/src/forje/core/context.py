@@ -16,6 +16,8 @@ _ctx: ContextVar[Context] = ContextVar("ctx")
 @final
 @dataclass
 class Context:
+    """Mutable build state for a single Forje evaluation."""
+
     ir: IR
     lock: RLock = field(init=False, default_factory=RLock)
 

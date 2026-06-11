@@ -1,12 +1,12 @@
 import json
+from pathlib import Path
 
 import pytest
-
 from resforge.apple.catalog import AssetCatalog
 from resforge.apple.types import AppleColor
 
 
-def test_asset_catalog_lifecycle(tmp_path):
+def test_asset_catalog_lifecycle(tmp_path: Path):
     catalog_name = "Assets"
     output_dir = tmp_path / "App"
     final_path = output_dir / f"{catalog_name}.xcassets"
@@ -21,12 +21,14 @@ def test_asset_catalog_lifecycle(tmp_path):
     assert (final_path / "Contents.json").exists()
     contents_file = final_path / "Primary.colorset" / "Contents.json"
     assert (contents_file).exists()
-    data = json.loads(contents_file.read_text())
-    assert data["colors"][0]["color"]["components"]["red"] == "1.000"
+    assert (
+        json.loads(contents_file.read_text())["colors"][0]["color"]["components"]["red"]
+        == "1.000"
+    )
     assert not temp_path.exists()
 
 
-def test_asset_catalog_atomic_failure(tmp_path):
+def test_asset_catalog_atomic_failure(tmp_path: Path):
     catalog_name = "Assets"
     output_dir = tmp_path / "App"
     final_path = output_dir / f"{catalog_name}.xcassets"
@@ -44,7 +46,7 @@ def test_asset_catalog_atomic_failure(tmp_path):
     assert not temp_path.exists()
 
 
-def test_asset_catalog_overwrites_existing(tmp_path):
+def test_asset_catalog_overwrites_existing(tmp_path: Path):
     catalog_name = "Assets"
     output_dir = tmp_path / "App"
     final_path = output_dir / f"{catalog_name}.xcassets"
@@ -60,7 +62,7 @@ def test_asset_catalog_overwrites_existing(tmp_path):
     assert (final_path / "Contents.json").exists()
 
 
-def test_require_context_enforcement(tmp_path):
+def test_require_context_enforcement(tmp_path: Path):
     catalog = AssetCatalog(tmp_path / "App", "Assets")
 
     with pytest.raises(RuntimeError):

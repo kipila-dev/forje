@@ -32,6 +32,8 @@ def _to_color(node: ColorNode) -> Color:
 
 @final
 class Apple(Backend):
+    """Generates Apple Asset Catalogs from design tokens."""
+
     @override
     def codegen(self, target: TargetNode, artifact: ArtifactNode) -> dict[str, bytes]:
         color_tokens = (t for t in target.tokens.values() if t.kind == "color")

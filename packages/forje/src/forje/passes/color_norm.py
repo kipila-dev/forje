@@ -10,6 +10,10 @@ __all__ = ["ColorCanonicalizer", "normalize_color_node", "normalize_token_node"]
 
 
 def normalize_color_node(node: ColorNode) -> ColorNode:
+    """Converts a `ColorNode` to xyz-d65.
+
+    Returns the node unchanged if it's already in xyz-d65 space.
+    """
     if node.space == "xyz-d65":
         return node
 
@@ -30,6 +34,7 @@ def normalize_color_node(node: ColorNode) -> ColorNode:
 
 
 def normalize_token_node(node: TokenNode) -> TokenNode:
+    """Normalizes all color mappings in a token to xyz-d65 in-place."""
     for mode, color in node.mapping.items():
         node.mapping[mode] = normalize_color_node(color)
     return node

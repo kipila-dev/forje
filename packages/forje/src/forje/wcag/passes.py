@@ -93,6 +93,8 @@ def _validate_contrast(
 
 @final
 class WCAGValidation(Pass):
+    """Validates WCAG contrast ratios for tokens with declared context constraints."""
+
     @override
     def run(self, ir: IR) -> None:
         errors: list[ForjeValidationError] = []

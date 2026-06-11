@@ -13,6 +13,8 @@ Level = Literal["aa", "aaa"]
 
 @dataclass
 class AgainstNode:
+    """A WCAG contrast requirement linking a foreground token to a background."""
+
     token: TokenNode
     role: Role = "text"
     level: Level = "aa"

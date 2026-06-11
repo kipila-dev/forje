@@ -1,9 +1,10 @@
-import pytest
+from pathlib import Path
 
+import pytest
 from resforge.io import atomic_write
 
 
-def test_atomic_replace_existing(tmp_path):
+def test_atomic_replace_existing(tmp_path: Path):
     target = tmp_path / "output.bin"
     target.write_bytes(b"old")
     with atomic_write(target) as f:
@@ -12,14 +13,14 @@ def test_atomic_replace_existing(tmp_path):
     assert not any(tmp_path.glob("*.tmp"))
 
 
-def test_creates_parent_dirs(tmp_path):
+def test_creates_parent_dirs(tmp_path: Path):
     target = tmp_path / "a" / "b" / "c" / "output.bin"
     with atomic_write(target) as f:
         f.write(b"hello")
     assert target.exists()
 
 
-def test_no_corruption_on_exception(tmp_path):
+def test_no_corruption_on_exception(tmp_path: Path):
     target = tmp_path / "output.bin"
     target.write_bytes(b"original")
 

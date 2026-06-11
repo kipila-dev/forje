@@ -12,8 +12,8 @@ def load_plugins() -> tuple[list[Module], list[Pass], dict[str, Backend]]:
     """Discovers and loads all registered Forje DSL modules and backends.
 
     Returns:
-        A tuple containing a list of loaded `Module` instances and a
-        dictionary mapping `Backend` names to their instances.
+        A 3-tuple of: loaded DSL modules, instantiated compiler passes,
+        and a dict mapping platform names to backend instances.
 
     Raises:
         ForjePluginLoadError: If a plugin fails to resolve, fails to

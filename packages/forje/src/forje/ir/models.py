@@ -23,6 +23,8 @@ TokenMapping = Literal["dark", "light", "high_contrast_dark", "high_contrast_lig
 
 @dataclass
 class ColorNode:
+    """A color value in a specific color space."""
+
     coords: tuple[float, float, float]
     alpha: float = 1.0
     space: ColorSpace = "srgb"
@@ -30,6 +32,8 @@ class ColorNode:
 
 @dataclass
 class TokenNode:
+    """A named design token with one or more appearance-mapped colors."""
+
     name: str
     kind: TokenKind
     context: list[object]
@@ -38,6 +42,8 @@ class TokenNode:
 
 @dataclass
 class ArtifactNode:
+    """Output configuration for a single platform."""
+
     platform: str
     path: str
     stem: str | None = None
@@ -45,6 +51,8 @@ class ArtifactNode:
 
 @dataclass
 class TargetNode:
+    """A named build target grouping tokens and artifact configs."""
+
     id: str
     tokens: dict[str, TokenNode] = Field(default_factory=dict)
     artifacts: list[ArtifactNode] = Field(default_factory=list)
@@ -52,5 +60,7 @@ class TargetNode:
 
 @dataclass
 class IR:
+    """The intermediate representation of a parsed build script."""
+
     targets: dict[str, TargetNode] = Field(default_factory=dict)
     outputs: dict[str, dict[str, dict[str, bytes]]] = Field(default_factory=dict)
