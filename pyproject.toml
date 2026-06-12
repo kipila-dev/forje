@@ -1,5 +1,5 @@
 [dependency-groups]
-dev = ["basedpyright", "pytest", "ruff"]
+dev = ["basedpyright", "pre-commit", "pytest", "ruff"]
 
 [tool.uv]
 managed = true
