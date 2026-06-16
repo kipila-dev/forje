@@ -67,7 +67,7 @@ def _build_dsl(
             return modules[name]
         raise FileNotFoundError
 
-    for module in env.dsl_modules:
+    for module in env.modules:
         if module.name is None:
             _ = _build_module(module, loader, into=default_module)
         else:

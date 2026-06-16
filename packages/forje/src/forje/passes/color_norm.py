@@ -2,7 +2,7 @@ from typing import final, override
 
 import coloraide
 
-from forje.core.driver import Pass
+from forje.core.pass_ import Pass
 from forje.ir import IR, TokenNode
 from forje.ir.models import ColorNode
 

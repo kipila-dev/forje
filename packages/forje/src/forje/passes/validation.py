@@ -1,8 +1,8 @@
 from typing import final, override
 
-from forje.core.driver import Pass
 from forje.core.environment import Environment
 from forje.core.errors import ForjeError
+from forje.core.pass_ import Pass
 from forje.ir import IR
 
 __all__ = ["PlatformSupport", "TargetFilter"]

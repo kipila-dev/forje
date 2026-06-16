@@ -1,8 +1,8 @@
 import importlib.metadata
 
 from forje.backend import Backend
-from forje.core.driver import Pass
 from forje.core.errors import ForjePluginLoadError
+from forje.core.pass_ import Pass
 from forje.dsl import Module
 
 __all__ = ["load_plugins"]
@@ -19,7 +19,7 @@ def load_plugins() -> tuple[list[Module], list[Pass], dict[str, Backend]]:
         ForjePluginLoadError: If a plugin fails to resolve, fails to
             instantiate, or does not match the expected type.
     """
-    dsl_modules: list[Module] = []
+    modules: list[Module] = []
     for ep in importlib.metadata.entry_points(group="forje.dsl"):
         try:
             module = ep.load()  # pyright: ignore[reportAny]
@@ -31,7 +31,7 @@ def load_plugins() -> tuple[list[Module], list[Pass], dict[str, Backend]]:
             msg = f"Invalid plugin '{ep.name}': must resolve to a Module instance"
             raise ForjePluginLoadError(msg)
 
-        dsl_modules.append(module)
+        modules.append(module)
 
     passes: list[Pass] = []
     for ep in importlib.metadata.entry_points(group="forje.pass"):
@@ -61,4 +61,4 @@ def load_plugins() -> tuple[list[Module], list[Pass], dict[str, Backend]]:
 
         backends[ep.name] = backend
 
-    return dsl_modules, passes, backends
+    return modules, passes, backends

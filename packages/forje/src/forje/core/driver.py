@@ -1,27 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, final, runtime_checkable
+from typing import TYPE_CHECKING, final
 
 from forje.core.frontend import evaluate
 
 if TYPE_CHECKING:
     from forje.core.environment import Environment
-    from forje.ir import IR
+    from forje.core.pass_ import Pass
 
-__all__ = ["Driver", "Pass"]
-
-
-@runtime_checkable
-class Pass(Protocol):
-    """A compiler pass.
-
-    Passes are executed sequentially by the `Driver` pipeline and modify the `IR`
-    in-place.
-    """
-
-    def run(self, ir: IR) -> None:
-        """Executes the compiler pass logic on the given IR instance."""
-        ...
+__all__ = ["Driver"]
 
 
 @final

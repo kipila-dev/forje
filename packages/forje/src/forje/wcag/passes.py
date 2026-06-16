@@ -4,8 +4,8 @@ from typing import final, override
 import coloraide
 from pydantic import ValidationError
 
-from forje.core.driver import Pass
 from forje.core.errors import ForjeValidationError
+from forje.core.pass_ import Pass
 from forje.ir import IR, ColorNode, TargetNode, TokenMapping, TokenNode
 from forje.passes.color_norm import normalize_token_node
 from forje.wcag.models import AgainstNode, Level, Role, against_adapter

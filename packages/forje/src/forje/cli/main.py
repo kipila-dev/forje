@@ -2,7 +2,7 @@ import logging
 import time
 from collections.abc import Generator
 from pathlib import Path
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 import typer
 from resforge.io import atomic_write
@@ -12,13 +12,16 @@ from rich.logging import RichHandler
 from forje import __version__
 from forje.cli.ui import error, success
 from forje.cli.utils import format_elapsed
-from forje.core.driver import Driver, Pass
+from forje.core.driver import Driver
 from forje.core.environment import Environment
 from forje.core.errors import ForjeError
 from forje.core.loader import load_plugins
 from forje.passes.codegen import Codegen
 from forje.passes.color_norm import ColorCanonicalizer
 from forje.passes.validation import PlatformSupport, TargetFilter
+
+if TYPE_CHECKING:
+    from forje.core.pass_ import Pass
 
 logging.basicConfig(
     level=logging.INFO,
@@ -83,14 +86,13 @@ def build(
     start = time.perf_counter()
 
     try:
-        dsl_modules, passes, backends = load_plugins()
-        env = Environment(dsl_modules, backends)
+        env = Environment(*load_plugins())
 
         pipeline: list[Pass] = [
             TargetFilter(targets),
             PlatformSupport(env),
             ColorCanonicalizer(),
-            *passes,
+            *env.passes,
             Codegen(env),
         ]
 
