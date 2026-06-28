@@ -18,7 +18,7 @@ from forje.core.errors import ForjeError
 from forje.core.loader import load_plugins
 from forje.passes.codegen import Codegen
 from forje.passes.color_norm import ColorCanonicalizer
-from forje.passes.validation import PlatformSupport, TargetFilter
+from forje.passes.validation import PlatformSupport, TargetFilter, TargetValidation
 
 if TYPE_CHECKING:
     from forje.core.pass_ import Pass
@@ -90,6 +90,7 @@ def build(
 
         pipeline: list[Pass] = [
             TargetFilter(targets),
+            TargetValidation(),
             PlatformSupport(env),
             ColorCanonicalizer(),
             *env.passes,

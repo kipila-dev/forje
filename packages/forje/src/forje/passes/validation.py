@@ -5,7 +5,7 @@ from forje.core.errors import ForjeError
 from forje.core.pass_ import Pass
 from forje.ir import IR
 
-__all__ = ["PlatformSupport", "TargetFilter"]
+__all__ = ["PlatformSupport", "TargetFilter", "TargetValidation"]
 
 
 @final
@@ -32,8 +32,21 @@ class TargetFilter(Pass):
                 k: v for k, v in ir.targets.items() if k in self._active_targets
             }
 
+
+@final
+class TargetValidation(Pass):
+    """Validates target configuration constraints."""
+
+    @override
+    def run(self, ir: IR) -> None:
         if not ir.targets:
             msg = "No targets defined in the build configuration"
+            raise ForjeError(msg)
+
+        empty_targets = [t.id for t in ir.targets.values() if not t.tokens]
+        if empty_targets:
+            noun = "target" if len(empty_targets) == 1 else "targets"
+            msg = f"Empty {noun}: {', '.join(empty_targets)}"
             raise ForjeError(msg)
 
 
