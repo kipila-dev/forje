@@ -47,8 +47,8 @@ class Apple(Backend):
             for token in color_tokens:
                 name = _to_pascal_case(token.name)
                 apple_colors = [
-                    AppleColor(_to_color(node), appearances=_APPEARANCE_MAP[mapping])
-                    for mapping, node in token.mapping.items()
+                    AppleColor(_to_color(node), appearances=_APPEARANCE_MAP[mode])
+                    for mode, node in token.mapping.items()
                 ]
                 catalog.colorset(name, *apple_colors)
 

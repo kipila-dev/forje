@@ -21,6 +21,7 @@ target(
     artifacts=[
         Artifact("android", "acme/res"),
         Artifact("apple", "acme", stem="Assets"),
+        Artifact("css", "acme/assets"),
     ],
 )
 ```

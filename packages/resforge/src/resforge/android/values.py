@@ -19,7 +19,7 @@ _STYLE_NAME_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_\.]*$")
 
 @final
 class ValuesWriter:
-    """A fluent context manager for generating Android XML resource files.
+    """A context manager for generating Android XML resource files.
 
     Provides a type-safe interface for creating strings, dimensions, colors,
     and arrays. Validates resource names and color formats at runtime.
@@ -30,7 +30,7 @@ class ValuesWriter:
 
     """
 
-    def __init__(self, path: str | Path, sink: WriteSink | None = None) -> None:
+    def __init__(self, path: str | Path, *, sink: WriteSink | None = None) -> None:
         """Initializes the ValuesWriter.
 
         Args:
@@ -153,8 +153,8 @@ class ValuesWriter:
 
         """
         for name, color in values.items():
-            resolved = Color.parse(color)
-            self._append("color", name, resolved.to_srgb_argb_hex())
+            parsed_color = Color.parse(color)
+            self._append("color", name, parsed_color.to_srgb_argb_hex())
         return self
 
     @require_context

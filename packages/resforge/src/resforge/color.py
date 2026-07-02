@@ -110,6 +110,20 @@ class Color:
             round(self.alpha, 3) + 0.0,
         )
 
+    def to_oklch_components(self) -> tuple[float, float, float, float]:
+        """Convert the color to Oklch components (L, C, H, A).
+
+        Colors outside Oklch gamut are automatically clipped to the nearest
+        valid boundary.
+        """
+        oklch = self._to_coloraide().convert("oklch").clip()
+        return (
+            round(oklch["lightness"], 3) + 0.0,
+            round(oklch["chroma"], 3) + 0.0,
+            round(oklch["hue"], 3) + 0.0,
+            round(self.alpha, 3) + 0.0,
+        )
+
     def to_srgb_argb_hex(self, prefix: str = "#") -> str:
         """Convert the color to an ARGB hexadecimal string.
 

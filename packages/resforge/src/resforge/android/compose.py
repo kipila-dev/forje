@@ -100,7 +100,7 @@ class _ObjectScope(_BaseComposeScope):
 
 @final
 class ComposeWriter(_BaseComposeScope):
-    """A fluent context manager for generating Jetpack Compose color definitions.
+    """A context manager for generating Jetpack Compose color definitions.
 
     Writes a Kotlin file containing typed Color or Dimension properties.
 
@@ -117,6 +117,7 @@ class ComposeWriter(_BaseComposeScope):
         self,
         path: str | Path,
         package: str,
+        *,
         sink: WriteSink | None = None,
     ) -> None:
         """Initializes the ComposeWriter.

@@ -13,7 +13,7 @@ __all__ = ["FileSystemSink", "MemorySink", "WriteSink", "atomic_write"]
 def atomic_write(target_path: str | Path) -> Generator[IO[bytes], None, None]:
     """Yields a temporary file, then atomically replaces target_path on success.
 
-    Preserves file permissions of target_path, if target_path already exists.
+    Preserves file permissions if `target_path` already exists.
     """
     target_path = Path(target_path)
     target_path.parent.mkdir(parents=True, exist_ok=True)

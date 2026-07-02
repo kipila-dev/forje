@@ -15,7 +15,7 @@ __all__ = ["AssetCatalog"]
 
 @final
 class AssetCatalog:
-    """A fluent context manager for generating Apple Asset Catalogs (.xcassets).
+    """A context manager for generating Apple Asset Catalogs (.xcassets).
 
     To ensure atomic writes, it works in a temporary directory and only swaps
     to the final destination upon successful completion of the context.
@@ -29,6 +29,7 @@ class AssetCatalog:
         self,
         path: str | Path,
         name: str,
+        *,
         sink: WriteSink | None = None,
     ) -> None:
         """Initializes the AssetCatalog.
